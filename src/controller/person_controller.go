@@ -142,12 +142,12 @@ func (n *PersonController) ListPeople(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
 	}
 
-	response = model.Response{
+	responseData := model.ResponseData[[]model.PersonResponse]{
 		Message: "success",
 		Data:    people,
 	}
 
-	return ctx.Status(http.StatusOK).JSON(response)
+	return ctx.Status(http.StatusOK).JSON(responseData)
 }
 
 // GetPerson
@@ -192,12 +192,12 @@ func (n *PersonController) GetPerson(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(response)
 	}
 
-	response = model.Response{
+	responseData := model.ResponseData[model.PersonResponse]{
 		Message: "success",
 		Data:    person,
 	}
 
-	return ctx.Status(http.StatusOK).JSON(response)
+	return ctx.Status(http.StatusOK).JSON(responseData)
 }
 
 // UpdatePerson

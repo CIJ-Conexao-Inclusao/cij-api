@@ -145,10 +145,6 @@ func (s *personService) GetPersonById(personId int) (model.PersonResponse, utils
 		return personResponse, err
 	}
 
-	if person.Id == 0 {
-		return personResponse, personServiceError("person not found", "01")
-	}
-
 	s.personToResponse(&personResponse, person)
 
 	return personResponse, utils.Error{}
