@@ -36,6 +36,10 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	newsService := service.NewNewsService(newsRepo)
 	newsController := controller.NewNewsController(newsService)
 
+	disabilityRepo := repo.NewDisabilityRepo(db)
+	disabilityService := service.NewDisabilityService(disabilityRepo)
+	disabilityController := controller.NewDisabilityController(disabilityService)
+
 	configService := service.NewConfigService(userRepo)
 	configController := controller.NewConfigController(configService)
 
@@ -81,6 +85,11 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	api = router.Group("/config")
 	{
 		api.Put("/:email", configController.UpdateUserConfig)
+	}
+
+	api = router.Group("/disabilities")
+	{
+		api.Post("/", disabilityController.CreateDisability)
 	}
 
 	basePath := getBasePath()

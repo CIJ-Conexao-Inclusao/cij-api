@@ -360,7 +360,7 @@ func (n *PersonController) UpdatePersonAddress(ctx *fiber.Ctx) error {
 // @Failure 500 {object} MessageResponse
 // @Router /people/:id/disabilities [put]
 func (n *PersonController) UpdatePersonDisabilities(ctx *fiber.Ctx) error {
-	var disabilities []model.DisabilityRequest
+	var disabilities []model.PersonDisabilityRequest
 	var response model.Response
 
 	if err := ctx.BodyParser(&disabilities); err != nil {
@@ -552,7 +552,7 @@ func (c *PersonController) validatePerson(personRequest model.PersonRequest) uti
 	return utils.Error{}
 }
 
-func (n *PersonController) validatePersonDisabilities(disabiliesRequest []model.DisabilityRequest) utils.Error {
+func (n *PersonController) validatePersonDisabilities(disabiliesRequest []model.PersonDisabilityRequest) utils.Error {
 	for _, disabilityRequest := range disabiliesRequest {
 		disability, err := n.personService.GetDisabilityById(disabilityRequest.Id)
 		if err.Code != "" {

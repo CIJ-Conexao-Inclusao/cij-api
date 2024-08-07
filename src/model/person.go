@@ -21,13 +21,13 @@ type Person struct {
 }
 
 type PersonRequest struct {
-	Name         string              `json:"name"`
-	Cpf          string              `json:"cpf"`
-	Phone        string              `json:"phone"`
-	Gender       enum.GenderEnum     `json:"gender"`
-	User         UserRequest         `json:"user"`
-	Address      AddressRequest      `json:"address"`
-	Disabilities []DisabilityRequest `json:"disabilities"`
+	Name         string                    `json:"name"`
+	Cpf          string                    `json:"cpf"`
+	Phone        string                    `json:"phone"`
+	Gender       enum.GenderEnum           `json:"gender"`
+	User         UserRequest               `json:"user"`
+	Address      AddressRequest            `json:"address"`
+	Disabilities []PersonDisabilityRequest `json:"disabilities"`
 }
 
 type PersonResponse struct {
