@@ -6,10 +6,14 @@ type Field struct {
 }
 
 type Response struct {
-	Message string      `json:"message"`
-	Code    string      `json:"code,omitempty"`
-	Fields  []Field     `json:"fields,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
+	Message string  `json:"message"`
+	Code    string  `json:"code,omitempty"`
+	Fields  []Field `json:"fields,omitempty"`
+}
+
+type ResponseData[T any] struct {
+	Message string `json:"message"`
+	Data    T      `json:"data,omitempty"`
 }
 
 type LoginResponse struct {
