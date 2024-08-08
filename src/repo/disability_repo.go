@@ -11,7 +11,6 @@ import (
 type DisabilityRepo interface {
 	BaseRepoMethods
 
-	CreateDisability(disability *model.Disability) utils.Error
 	BatchInsertDisabilities(disabilities []*model.Disability) utils.Error
 }
 
@@ -36,26 +35,8 @@ func disabilityRepoError(message string, code string) utils.Error {
 	return utils.NewError(message, errorCode)
 }
 
-func (d *disabilityRepo) CreateDisability(disability *model.Disability) utils.Error {
-	if err := d.db.Create(disability).Error; err != nil {
-		return disabilityRepoError("failed to create the disability", "01")
-	}
-
-	return utils.Error{}
-}
-
 func (d *disabilityRepo) BatchInsertDisabilities(disabilities []*model.Disability) utils.Error {
-	sql := "INSERT INTO disabilities (id, category, description, rate) VALUES "
-
-	for i, disability := range disabilities {
-		sql += fmt.Sprintf("(NULL, '%s', '%s', '%s')", disability.Category, disability.Description, disability.Rate)
-
-		if i < len(disabilities)-1 {
-			sql += ", "
-		}
-	}
-
-	if err := d.db.Exec(sql).Error; err != nil {
+	if err := d.db.Create(&disabilities).Error; err != nil {
 		fmt.Println("Error", err)
 		return disabilityRepoError("failed to batch insert the disabilities", "02")
 	}

@@ -22,18 +22,13 @@ func NewDisabilityService(disabilityRepo repo.DisabilityRepo) DisabilityService 
 }
 
 func (s *disabilityService) CreateDisability(disabilities []model.DisabilityRequest) utils.Error {
-	fmt.Println("CreateDisability")
 	disabilitiesToInsert := []*model.Disability{}
 
 	for _, disability := range disabilities {
 		disabilityModel := disability.ToModel()
 
-		fmt.Println("Disability model", disabilityModel)
-
 		disabilitiesToInsert = append(disabilitiesToInsert, &disabilityModel)
 	}
-
-	fmt.Println("Disabilities to insert", disabilitiesToInsert)
 
 	err := s.disabilityRepo.BatchInsertDisabilities(disabilitiesToInsert)
 	if err.Code != "" {
