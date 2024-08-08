@@ -3,6 +3,7 @@ package controller
 import (
 	"cij_api/src/model"
 	"cij_api/src/service"
+	"mime/multipart"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -32,20 +33,13 @@ func (n *NewsController) ListNews(ctx *fiber.Ctx) error {
 	var response model.Response
 
 	news, err := n.newsService.ListNews()
-	if err != nil {
+	if err.Code != "" {
 		response = model.Response{
 			Message: err.Error(),
+			Code:    err.Code,
 		}
 
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
-	}
-
-	if len(news) == 0 {
-		response = model.Response{
-			Message: "No news were found",
-		}
-
-		return ctx.Status(http.StatusNotFound).JSON(response)
 	}
 
 	response = model.Response{
@@ -54,4 +48,55 @@ func (n *NewsController) ListNews(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(http.StatusOK).JSON(response)
+}
+
+// CreateNews
+// @Summary Create a new news.
+// @Description create a new news.
+// @Tags News
+// @Accept json
+// @Produce json
+// @Param news formData model.NewsRequest true "news"
+// @Param banner formData file true "banner"
+// @Param authorImage formData file true "author_image"
+// @Success 201 {object} model.Response
+// @Failure 400 {object} string "bad request"
+// @Failure 500 {object} string "internal server error"
+// @Router /news [post]
+func (n *NewsController) CreateNews(ctx *fiber.Ctx) error {
+	var response model.Response
+
+	form, err := ctx.MultipartForm()
+	if err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(model.Response{
+			Message: err.Error(),
+		})
+	}
+
+	request := model.NewsRequest{
+		Title:       form.Value["title"][0],
+		Description: form.Value["description"][0],
+		Author:      form.Value["author"][0],
+		Date:        form.Value["date"][0],
+	}
+
+	files := make(map[string]multipart.FileHeader)
+
+	for filename, file := range form.File {
+		files[filename] = *file[0]
+	}
+
+	newsError := n.newsService.CreateNews(request, files)
+	if newsError.Code != "" {
+		return ctx.Status(http.StatusInternalServerError).JSON(model.Response{
+			Message: newsError.Error(),
+			Code:    newsError.Code,
+		})
+	}
+
+	response = model.Response{
+		Message: "success",
+	}
+
+	return ctx.Status(http.StatusCreated).JSON(response)
 }

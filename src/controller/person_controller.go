@@ -4,6 +4,7 @@ import (
 	"cij_api/src/model"
 	"cij_api/src/service"
 	"cij_api/src/utils"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -22,6 +23,12 @@ func NewPersonController(personService service.PersonService) *PersonController 
 	return &PersonController{
 		personService: personService,
 	}
+}
+
+func personControllerError(message string, code string, fields []model.Field) utils.Error {
+	errorCode := utils.NewErrorCode(utils.ControllerErrorCode, utils.PersonErrorType, code)
+
+	return utils.NewErrorWithFields(message, errorCode, fields)
 }
 
 // CreatePerson
@@ -51,6 +58,17 @@ func (n *PersonController) CreatePerson(ctx *fiber.Ctx) error {
 		response = model.Response{
 			Message: err.Error(),
 			Code:    err.GetCode(),
+			Fields:  err.GetFields(),
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	if err := utils.ValidateUser(personRequest.User); err.Code != "" {
+		response = model.Response{
+			Message: err.Error(),
+			Code:    err.GetCode(),
+			Fields:  err.GetFields(),
 		}
 
 		return ctx.Status(http.StatusBadRequest).JSON(response)
@@ -60,15 +78,17 @@ func (n *PersonController) CreatePerson(ctx *fiber.Ctx) error {
 		response = model.Response{
 			Message: err.Error(),
 			Code:    err.GetCode(),
+			Fields:  err.GetFields(),
 		}
 
 		return ctx.Status(http.StatusBadRequest).JSON(response)
 	}
 
-	if err := validateAddress(personRequest.Address); err.Code != "" {
+	if err := utils.ValidateAddress(personRequest.Address); err.Code != "" {
 		response = model.Response{
 			Message: err.Error(),
 			Code:    err.GetCode(),
+			Fields:  err.GetFields(),
 		}
 
 		return ctx.Status(http.StatusBadRequest).JSON(response)
@@ -122,9 +142,51 @@ func (n *PersonController) ListPeople(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
 	}
 
-	if len(people) == 0 {
+	response = model.Response{
+		Message: "success",
+		Data:    people,
+	}
+
+	return ctx.Status(http.StatusOK).JSON(response)
+}
+
+// GetPerson
+// @Summary Get a person by ID.
+// @Description get a person by their ID.
+// @Tags People
+// @Accept application/json
+// @Produce json
+// @Param id path string true "Person ID"
+// @Success 200 {object} model.PersonResponse
+// @Failure 404 {object} MessageResponse
+// @Failure 500 {object} MessageResponse
+// @Router /people/:id [get]
+func (n *PersonController) GetPerson(ctx *fiber.Ctx) error {
+	var response model.Response
+
+	personId := ctx.Params("id")
+
+	idInt, err := strconv.Atoi(personId)
+	if err != nil {
 		response = model.Response{
-			Message: "no people were found",
+			Message: err.Error(),
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	person, errPerson := n.personService.GetPersonById(idInt)
+	if errPerson.Code != "" {
+		response = model.Response{
+			Message: errPerson.Error(),
+		}
+
+		return ctx.Status(http.StatusInternalServerError).JSON(response)
+	}
+
+	if person.Id == 0 {
+		response = model.Response{
+			Message: "person not found",
 		}
 
 		return ctx.Status(http.StatusNotFound).JSON(response)
@@ -132,7 +194,7 @@ func (n *PersonController) ListPeople(ctx *fiber.Ctx) error {
 
 	response = model.Response{
 		Message: "success",
-		Data:    people,
+		Data:    person,
 	}
 
 	return ctx.Status(http.StatusOK).JSON(response)
@@ -190,14 +252,16 @@ func (n *PersonController) UpdatePerson(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(response)
 	}
 
-	if err := n.validatePerson(personRequest); err.Code != "" {
-		response = model.Response{
-			Message: err.Error(),
-			Code:    err.GetCode(),
-		}
+	// TODO: Validate only the passed fields
+	// if err := n.validatePerson(personRequest); err.Code != "" {
+	// 	response = model.Response{
+	// 		Message: err.Error(),
+	// 		Code:    err.GetCode(),
+	// 		Fields:  err.GetFields(),
+	// 	}
 
-		return ctx.Status(http.StatusBadRequest).JSON(response)
-	}
+	// 	return ctx.Status(http.StatusBadRequest).JSON(response)
+	// }
 
 	if err := n.personService.UpdatePerson(personRequest, idInt); err.Code != "" {
 		response = model.Response{
@@ -267,16 +331,7 @@ func (n *PersonController) UpdatePersonAddress(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(response)
 	}
 
-	if err := validateAddress(addressRequest); err.Code != "" {
-		response = model.Response{
-			Message: err.Error(),
-			Code:    err.GetCode(),
-		}
-
-		return ctx.Status(http.StatusBadRequest).JSON(response)
-	}
-
-	if err := n.personService.UpdatePersonAddress(addressRequest, idInt); err.Code != "" {
+	if err := n.personService.UpdatePersonAddress(addressRequest, idInt, nil); err.Code != "" {
 		response = model.Response{
 			Message: err.Error(),
 			Code:    err.GetCode(),
@@ -305,7 +360,7 @@ func (n *PersonController) UpdatePersonAddress(ctx *fiber.Ctx) error {
 // @Failure 500 {object} MessageResponse
 // @Router /people/:id/disabilities [put]
 func (n *PersonController) UpdatePersonDisabilities(ctx *fiber.Ctx) error {
-	var disabilities []model.DisabilityRequest
+	var disabilities []model.PersonDisabilityRequest
 	var response model.Response
 
 	if err := ctx.BodyParser(&disabilities); err != nil {
@@ -353,7 +408,7 @@ func (n *PersonController) UpdatePersonDisabilities(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(response)
 	}
 
-	if err := n.personService.UpdatePersonDisabilities(disabilities, idInt); err.Code != "" {
+	if err := n.personService.UpdatePersonDisabilities(disabilities, idInt, nil); err.Code != "" {
 		response = model.Response{
 			Message: err.Error(),
 			Code:    err.GetCode(),
@@ -428,112 +483,84 @@ func (n *PersonController) DeletePerson(ctx *fiber.Ctx) error {
 }
 
 func validatePersonRequiredFields(personRequest model.PersonRequest) utils.Error {
+	fieldsWithErrors := []model.Field{}
+
 	if personRequest.Name == "" {
-		return utils.NewError("name is required", "ERR-0001")
+		fieldsWithErrors = append(fieldsWithErrors, model.Field{Name: "name"})
 	}
 
 	if personRequest.Cpf == "" {
-		return utils.NewError("cpf is required", "ERR-0002")
+		fieldsWithErrors = append(fieldsWithErrors, model.Field{Name: "cpf"})
 	}
 
 	if personRequest.Phone == "" {
-		return utils.NewError("phone is required", "ERR-0003")
+		fieldsWithErrors = append(fieldsWithErrors, model.Field{Name: "phone"})
 	}
 
 	if personRequest.Gender == "" {
-		return utils.NewError("gender is required", "ERR-0004")
+		fieldsWithErrors = append(fieldsWithErrors, model.Field{Name: "gender"})
 	}
 
-	if personRequest.User.Email == "" {
-		return utils.NewError("email is required", "ERR-0005")
-	}
+	if len(fieldsWithErrors) > 0 {
+		errorCode := utils.NewErrorCode(utils.ValidationErrorCode, utils.PersonErrorType, "01")
 
-	if personRequest.User.Password == "" {
-		return utils.NewError("password is required", "ERR-0006")
+		return utils.NewErrorWithFields("required fields are missing", errorCode, fieldsWithErrors)
 	}
 
 	return utils.Error{}
 }
 
 func (c *PersonController) validatePerson(personRequest model.PersonRequest) utils.Error {
+	fieldsWithErrors := []model.Field{}
+
 	if len(personRequest.Cpf) != 11 {
-		return utils.NewError("cpf must have 11 digits", "ERR-0007")
+		fieldsWithErrors = append(fieldsWithErrors, model.Field{Name: "cpf", Value: "cpf must have 11 digits"})
 	}
 
 	person, err := c.personService.GetPersonByCpf(personRequest.Cpf)
 	if err.Code != "" {
-		return utils.FailedToGetPerson
+		return err
 	}
 
 	if person.Id != 0 {
-		return utils.NewError("cpf already registered", "ERR-0008")
+		return personControllerError("cpf already registered", "02", nil)
 	}
 
 	if len(personRequest.Phone) != 13 {
-		return utils.NewError("phone must have 13 digits", "ERR-0009")
+		fieldsWithErrors = append(fieldsWithErrors, model.Field{Name: "phone", Value: "phone must have 13 digits"})
 	}
 
 	if !personRequest.Gender.IsValid() {
-		return utils.NewError("gender is not valid", "ERR-0010")
+		fieldsWithErrors = append(fieldsWithErrors, model.Field{Name: "gender", Value: "gender is not valid"})
 	}
 
 	user, err := c.personService.GetUserByEmail(personRequest.User.Email)
 	if err.Code != "" {
-		return utils.NewError("failed to get user by email", "ERR-0011")
+		return err
 	}
 
 	if user.Id != 0 {
-		return utils.NewError("email already registered", "ERR-0012")
+		return personControllerError("email already registered", "03", nil)
+	}
+
+	if len(fieldsWithErrors) > 0 {
+		errorCode := utils.NewErrorCode(utils.ValidationErrorCode, utils.PersonErrorType, "02")
+
+		return utils.NewErrorWithFields("invalid fields", errorCode, fieldsWithErrors)
 	}
 
 	return utils.Error{}
 }
 
-func validateAddress(addressRequest model.AddressRequest) utils.Error {
-	if addressRequest.Street == "" {
-		return utils.NewError("street is required", "ERR-0013")
-	}
-
-	if addressRequest.Number == "" {
-		return utils.NewError("number is required", "ERR-0014")
-	}
-
-	if addressRequest.Neighborhood == "" {
-		return utils.NewError("neighborhood is required", "ERR-0015")
-	}
-
-	if addressRequest.City == "" {
-		return utils.NewError("city is required", "ERR-0016")
-	}
-
-	if addressRequest.State == "" {
-		return utils.NewError("state is required", "ERR-0017")
-	}
-
-	if addressRequest.ZipCode == "" {
-		return utils.NewError("zip code is required", "ERR-0018")
-	}
-
-	if len(addressRequest.ZipCode) != 8 {
-		return utils.NewError("zip code must have 8 digits", "ERR-0019")
-	}
-
-	if len(addressRequest.State) != 2 {
-		return utils.NewError("state must have 2 digits", "ERR-0020")
-	}
-
-	return utils.Error{}
-}
-
-func (n *PersonController) validatePersonDisabilities(disabiliesRequest []model.DisabilityRequest) utils.Error {
-	for _, disability := range disabiliesRequest {
-		disability, err := n.personService.GetDisabilityById(disability.Id)
+func (n *PersonController) validatePersonDisabilities(disabiliesRequest []model.PersonDisabilityRequest) utils.Error {
+	for _, disabilityRequest := range disabiliesRequest {
+		disability, err := n.personService.GetDisabilityById(disabilityRequest.Id)
 		if err.Code != "" {
-			return utils.NewError("failed to get disability", "ERR-0021")
+			return err
 		}
 
 		if disability.Id == 0 {
-			return utils.NewError("disability not found", "ERR-0022")
+			return personControllerError(fmt.Sprintf("disability with id %d not found", disabilityRequest.Id), "06", nil)
 		}
 	}
 

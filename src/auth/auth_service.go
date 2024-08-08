@@ -4,7 +4,7 @@ import (
 	"cij_api/src/config"
 	"cij_api/src/model"
 	"cij_api/src/repo"
-	"errors"
+	"cij_api/src/utils"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -20,41 +20,47 @@ func NewAuthService(userRepo repo.UserRepo) *AuthService {
 	}
 }
 
-func getSecretKey() ([]byte, error) {
-	loadConfig, err := config.LoadConfig("../")
-	if err != nil {
-		return nil, errors.New("error on get secret key from .env")
-	}
+func authServiceError(message string, code string) utils.Error {
+	errorCode := utils.NewErrorCode(utils.ServiceErrorCode, utils.UserErrorType, code)
 
-	return []byte(loadConfig.SecretKey), nil
+	return utils.NewError(message, errorCode)
 }
 
-func (s *AuthService) GenerateToken(user model.User) (string, error) {
-	secretKey, err := getSecretKey()
+func getSecretKey() ([]byte, utils.Error) {
+	loadConfig, err := config.LoadConfig("../")
 	if err != nil {
-		return "", errors.New("error on get secret key from .env")
+		return nil, authServiceError("failed to load config", "01")
+	}
+
+	return []byte(loadConfig.SecretKey), utils.Error{}
+}
+
+func (s *AuthService) GenerateToken(user model.User) (string, utils.Error) {
+	secretKey, err := getSecretKey()
+	if err.Code != "" {
+		return "", err
 	}
 
 	claims := &jwt.MapClaims{
-		"exp":   jwt.TimeFunc().Add(time.Minute * 10).Unix(),
+		"exp":   jwt.TimeFunc().Add(time.Hour * 24).Unix(),
 		"role":  user.Role.Name,
 		"email": user.Email,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString(secretKey)
-	if err != nil {
-		return "", err
+	tokenString, tokenError := token.SignedString(secretKey)
+	if tokenError != nil {
+		return "", authServiceError("failed to generate token", "02")
 	}
 
-	return tokenString, nil
+	return tokenString, utils.Error{}
 }
 
 func ValidateToken(tokenString string) (*jwt.Token, error) {
 	secret, err := getSecretKey()
-	if err != nil {
-		return nil, errors.New("failed to get token")
+	if err.Code != "" {
+		return nil, err
 	}
 
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -62,44 +68,44 @@ func ValidateToken(tokenString string) (*jwt.Token, error) {
 	})
 }
 
-func (s *AuthService) Authenticate(credentials model.Credentials) (model.User, error) {
+func (s *AuthService) Authenticate(credentials model.Credentials) (model.User, utils.Error) {
 	var user model.User
 
 	user, err := s.userRepo.GetUserByEmail(credentials.Email)
-	if err != nil {
-		return user, errors.New("failed to get user by email")
+	if err.Code != "" {
+		return user, err
 	}
 
 	if user.Email == "" {
-		return user, errors.New("user with this email not found")
+		return user, authServiceError("user with this email not found", "03")
 	}
 
 	if !user.ValidatePassword(credentials.Password) {
-		return user, errors.New("email/password incorrects")
+		return user, authServiceError("invalid password", "04")
 	}
 
-	return user, nil
+	return user, utils.Error{}
 }
 
-func (s *AuthService) GetUserData(token string) (model.User, error) {
+func (s *AuthService) GetUserData(token string) (model.User, utils.Error) {
 	var user model.User
 
 	tokenData, err := ValidateToken(token)
 	if err != nil {
-		return user, errors.New("invalid token")
+		return user, authServiceError("failed to validate token", "05")
 	}
 
 	claims := tokenData.Claims.(jwt.MapClaims)
 	tokenEmail := claims["email"].(string)
 
-	user, err = s.userRepo.GetUserByEmail(tokenEmail)
-	if err != nil {
-		return user, errors.New("failed to get user by email")
+	user, userError := s.userRepo.GetUserByEmail(tokenEmail)
+	if userError.Code != "" {
+		return user, userError
 	}
 
 	if user.Email == "" {
-		return user, errors.New("user with this email not found")
+		return user, authServiceError("user with this email not found", "06")
 	}
 
-	return user, nil
+	return user, utils.Error{}
 }

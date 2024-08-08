@@ -4,19 +4,22 @@ import (
 	"cij_api/src/model"
 	"cij_api/src/repo"
 	"cij_api/src/utils"
+	"fmt"
+
+	"gorm.io/gorm"
 )
 
 type PersonService interface {
 	CreatePerson(createPerson model.PersonRequest) utils.Error
 	ListPeople() ([]model.PersonResponse, utils.Error)
 	GetPersonByUserId(userId int) (model.Person, utils.Error)
-	GetPersonById(personId int) (model.Person, utils.Error)
+	GetPersonById(personId int) (model.PersonResponse, utils.Error)
 	GetPersonByCpf(cpf string) (model.Person, utils.Error)
 	GetUserByEmail(email string) (model.User, utils.Error)
 	GetDisabilityById(disabilityId int) (model.Disability, utils.Error)
 	UpdatePerson(person model.PersonRequest, personId int) utils.Error
-	UpdatePersonAddress(address model.AddressRequest, personId int) utils.Error
-	UpdatePersonDisabilities(disabilities []model.DisabilityRequest, personId int) utils.Error
+	UpdatePersonAddress(address model.AddressRequest, personId int, tx *gorm.DB) utils.Error
+	UpdatePersonDisabilities(disabilities []model.PersonDisabilityRequest, personId int, tx *gorm.DB) utils.Error
 	DeletePerson(personId int) utils.Error
 }
 
@@ -41,49 +44,24 @@ func NewPersonService(
 	}
 }
 
+func personServiceError(message string, code string) utils.Error {
+	errorCode := utils.NewErrorCode(utils.ServiceErrorCode, utils.PersonErrorType, code)
+
+	return utils.NewError(message, errorCode)
+}
+
 func (s *personService) ListPeople() ([]model.PersonResponse, utils.Error) {
 	peopleResponse := []model.PersonResponse{}
 
 	people, err := s.personRepo.ListPeople()
-	if err != nil {
-		return peopleResponse, utils.FailedToListPeople
+	if err.Code != "" {
+		return peopleResponse, err
 	}
 
 	for _, person := range people {
-		user, err := s.userRepo.GetUserById(person.User.Id)
-		if err != nil {
-			return peopleResponse, utils.FailedToGetUser
-		}
+		personResponse := model.PersonResponse{}
 
-		personResponse := person.ToResponse(user)
-
-		if person.AddressId != nil {
-			address, err := s.addressRepo.GetAddressById(*person.AddressId)
-			if err != nil {
-				return peopleResponse, utils.FailedToGetAddress
-			}
-
-			if address.Id != 0 {
-				addressResponse := address.ToResponse()
-				personResponse.Address = &addressResponse
-			}
-		}
-
-		disabilities, err := s.personDisabilityRepo.GetPersonDisabilities(person.Id)
-		if err != nil {
-			return peopleResponse, utils.FailedToGetDisability
-		}
-
-		if len(disabilities) > 0 {
-			var disabilitiesResponse []model.PersonDisabilityResponse
-
-			for _, disability := range disabilities {
-				disabilityResponse := disability.ToResponse()
-				disabilitiesResponse = append(disabilitiesResponse, disabilityResponse)
-			}
-
-			personResponse.Disabilities = &disabilitiesResponse
-		}
+		s.personToResponse(&personResponse, person)
 
 		peopleResponse = append(peopleResponse, personResponse)
 	}
@@ -96,58 +74,55 @@ func (n *personService) CreatePerson(createPerson model.PersonRequest) utils.Err
 
 	hashedPassword, err := utils.EncryptPassword(userInfo.Password)
 	if err != nil {
-		return utils.FailedToEncryptPassword
+		return personServiceError("failed to encrypt the password", "01")
 	}
 
 	userInfo.Password = hashedPassword
-	userInfo.RoleId = 1 // 1 is the id of the role "person"
+	userInfo.RoleId = model.PersonRole
 
-	userId, err := n.userRepo.CreateUser(userInfo)
-	if err != nil {
-		return utils.FailedToCreateUser
+	errTx := n.userRepo.BeginTransaction(func(tx *gorm.DB) error {
+		userId, userError := n.userRepo.CreateUser(userInfo, tx)
+		if userError.Code != "" {
+			fmt.Print("Error: ", userError)
+			return userError
+		}
+
+		userInfo.Id = userId
+
+		personInfo := createPerson.ToModel(userInfo)
+		personInfo.UserId = userId
+
+		personId, personError := n.personRepo.CreatePerson(personInfo, tx)
+		if personError.Code != "" {
+			fmt.Print("Error: ", personError)
+			return personError
+		}
+
+		addressError := n.UpdatePersonAddress(createPerson.Address, personId, tx)
+		if addressError.Code != "" {
+			fmt.Println("Error: ", addressError)
+			return addressError
+		}
+
+		disabilityError := n.UpdatePersonDisabilities(createPerson.Disabilities, personId, tx)
+		if disabilityError.Code != "" {
+			fmt.Print("Error: ", disabilityError)
+			return disabilityError
+		}
+
+		return nil
+	})
+
+	if errTx != nil {
+		return personServiceError("failed to create the person", "02")
 	}
 
-	personInfo := createPerson.ToModel(userInfo)
-	personInfo.UserId = userId
+	configService := NewConfigService(n.userRepo)
 
-	personId, err := n.personRepo.CreatePerson(personInfo)
-	if err != nil {
-		err = n.userRepo.DeleteUser(userId)
-		if err != nil {
-			return utils.FailedToDeleteUser
-		}
-
-		return utils.FailedToCreatePerson
-	}
-
-	addresError := n.UpdatePersonAddress(createPerson.Address, personId)
-	if addresError.Code != "" {
-		err = n.userRepo.DeleteUser(userId)
-		if err != nil {
-			return utils.FailedToDeleteUser
-		}
-
-		err = n.personRepo.DeletePerson(personId)
-		if err != nil {
-			return utils.FailedToDeletePerson
-		}
-
-		return addresError
-	}
-
-	disbilityError := n.UpdatePersonDisabilities(createPerson.Disabilities, personId)
-	if disbilityError.Code != "" {
-		err = n.userRepo.DeleteUser(userId)
-		if err != nil {
-			return utils.FailedToDeleteUser
-		}
-
-		err = n.personRepo.DeletePerson(personId)
-		if err != nil {
-			return utils.FailedToDeletePerson
-		}
-
-		return disbilityError
+	uploadErr := configService.UploadUserConfig(userInfo.Email, nil)
+	if uploadErr.Code != "" {
+		fmt.Print("Error: ", uploadErr)
+		return uploadErr
 	}
 
 	return utils.Error{}
@@ -155,26 +130,34 @@ func (n *personService) CreatePerson(createPerson model.PersonRequest) utils.Err
 
 func (n *personService) GetPersonByUserId(userId int) (model.Person, utils.Error) {
 	person, err := n.personRepo.GetPersonByUserId(userId)
-	if err != nil {
-		return person, utils.FailedToGetPerson
+	if err.Code != "" {
+		return person, err
 	}
 
 	return person, utils.Error{}
 }
 
-func (n *personService) GetPersonById(personId int) (model.Person, utils.Error) {
-	person, err := n.personRepo.GetPersonById(personId)
-	if err != nil {
-		return person, utils.FailedToGetPerson
+func (s *personService) GetPersonById(personId int) (model.PersonResponse, utils.Error) {
+	personResponse := model.PersonResponse{}
+
+	person, err := s.personRepo.GetPersonById(personId, nil)
+	if err.Code != "" {
+		return personResponse, err
 	}
 
-	return person, utils.Error{}
+	if person.Id == 0 {
+		return personResponse, personServiceError("person not found", "01")
+	}
+
+	s.personToResponse(&personResponse, person)
+
+	return personResponse, utils.Error{}
 }
 
 func (n *personService) GetPersonByCpf(cpf string) (model.Person, utils.Error) {
 	person, err := n.personRepo.GetPersonByCpf(cpf)
-	if err != nil {
-		return person, utils.FailedToGetPerson
+	if err.Code != "" {
+		return person, err
 	}
 
 	return person, utils.Error{}
@@ -182,8 +165,8 @@ func (n *personService) GetPersonByCpf(cpf string) (model.Person, utils.Error) {
 
 func (n *personService) GetUserByEmail(email string) (model.User, utils.Error) {
 	user, err := n.userRepo.GetUserByEmail(email)
-	if err != nil {
-		return user, utils.FailedToGetUser
+	if err.Code != "" {
+		return user, err
 	}
 
 	return user, utils.Error{}
@@ -192,50 +175,52 @@ func (n *personService) GetUserByEmail(email string) (model.User, utils.Error) {
 func (n *personService) UpdatePerson(updatePerson model.PersonRequest, personId int) utils.Error {
 	userInfo := updatePerson.ToUser()
 
-	hashedPassword, err := utils.EncryptPassword(userInfo.Password)
-	if err != nil {
-		return utils.FailedToEncryptPassword
-	}
+	if userInfo.Password != "" {
+		hashedPassword, err := utils.EncryptPassword(userInfo.Password)
+		if err != nil {
+			return personServiceError("failed to encrypt the password", "02")
+		}
 
-	userInfo.Password = hashedPassword
+		userInfo.Password = hashedPassword
 
-	err = n.userRepo.UpdateUser(userInfo, personId)
-	if err != nil {
-		return utils.FailedToUpdateUser
+		userError := n.userRepo.UpdateUser(userInfo, personId)
+		if userError.Code != "" {
+			return userError
+		}
 	}
 
 	personInfo := updatePerson.ToModel(userInfo)
 
-	err = n.personRepo.UpdatePerson(personInfo, personId)
-	if err != nil {
-		return utils.FailedToUpdatePerson
+	personError := n.personRepo.UpdatePerson(personInfo, personId, nil)
+	if personError.Code != "" {
+		return personError
 	}
 
 	return utils.Error{}
 }
 
-func (n *personService) UpdatePersonAddress(updateAddress model.AddressRequest, personId int) utils.Error {
+func (n *personService) UpdatePersonAddress(updateAddress model.AddressRequest, personId int, tx *gorm.DB) utils.Error {
 	addressInfo := updateAddress.ToModel()
 
-	person, err := n.personRepo.GetPersonById(personId)
-	if err != nil {
-		return utils.FailedToGetPerson
+	person, err := n.personRepo.GetPersonById(personId, tx)
+	if err.Code != "" {
+		return err
 	}
 
 	if person.AddressId != nil {
 		addressInfo.Id = *person.AddressId
 	}
 
-	addressId, err := n.addressRepo.UpsertAddress(addressInfo)
-	if err != nil {
-		return utils.FailedToUpsertAddress
+	addressId, err := n.addressRepo.UpsertAddress(addressInfo, tx)
+	if err.Code != "" {
+		return err
 	}
 
 	person.AddressId = &addressId
 
-	err = n.personRepo.UpdatePerson(person, personId)
-	if err != nil {
-		return utils.FailedToUpdatePerson
+	err = n.personRepo.UpdatePerson(person, personId, tx)
+	if err.Code != "" {
+		return err
 	}
 
 	return utils.Error{}
@@ -243,22 +228,22 @@ func (n *personService) UpdatePersonAddress(updateAddress model.AddressRequest, 
 
 func (n *personService) GetDisabilityById(id int) (model.Disability, utils.Error) {
 	disability, err := n.personDisabilityRepo.GetDisabilityById(id)
-	if err != nil {
-		return disability, utils.FailedToGetDisability
+	if err.Code != "" {
+		return disability, err
 	}
 
 	return disability, utils.Error{}
 }
 
-func (n *personService) UpdatePersonDisabilities(disabilities []model.DisabilityRequest, personId int) utils.Error {
-	person, err := n.personRepo.GetPersonById(personId)
-	if err != nil {
-		return utils.FailedToGetPerson
+func (n *personService) UpdatePersonDisabilities(disabilities []model.PersonDisabilityRequest, personId int, tx *gorm.DB) utils.Error {
+	person, err := n.personRepo.GetPersonById(personId, tx)
+	if err.Code != "" {
+		return err
 	}
 
-	err = n.personDisabilityRepo.ClearPersonDisability(personId)
-	if err != nil {
-		return utils.FailedToClearDisability
+	err = n.personDisabilityRepo.ClearPersonDisability(personId, tx)
+	if err.Code != "" {
+		return err
 	}
 
 	for _, disability := range disabilities {
@@ -268,45 +253,96 @@ func (n *personService) UpdatePersonDisabilities(disabilities []model.Disability
 			Acquired:     disability.Acquired,
 		}
 
-		err = n.personDisabilityRepo.UpsertPersonDisability(disability)
-		if err != nil {
-			return utils.FailedToUpsertDisability
+		err = n.personDisabilityRepo.UpsertPersonDisability(disability, tx)
+		if err.Code != "" {
+			return err
 		}
 	}
 
-	err = n.personRepo.UpdatePerson(person, personId)
-	if err != nil {
-		return utils.FailedToUpdatePerson
+	err = n.personRepo.UpdatePerson(person, personId, tx)
+	if err.Code != "" {
+		return err
 	}
 
 	return utils.Error{}
 }
 
 func (n *personService) DeletePerson(personId int) utils.Error {
-	person, err := n.personRepo.GetPersonById(personId)
-	if err != nil {
-		return utils.FailedToGetPerson
+	person, err := n.personRepo.GetPersonById(personId, nil)
+	if err.Code != "" {
+		return err
 	}
 
-	err = n.personDisabilityRepo.ClearPersonDisability(personId)
-	if err != nil {
-		return utils.FailedToClearDisability
+	err = n.personDisabilityRepo.ClearPersonDisability(personId, nil)
+	if err.Code != "" {
+		return err
 	}
 
 	err = n.personRepo.DeletePerson(personId)
-	if err != nil {
-		return utils.FailedToDeletePerson
+	if err.Code != "" {
+		return err
 	}
 
 	err = n.userRepo.DeleteUser(person.UserId)
-	if err != nil {
-		return utils.FailedToDeleteUser
+	if err.Code != "" {
+		return err
 	}
 
 	err = n.addressRepo.DeleteAddress(*person.AddressId)
-	if err != nil {
-		return utils.FailedToDeleteAddress
+	if err.Code != "" {
+		return err
 	}
 
 	return utils.Error{}
+}
+
+func (n *personService) personToResponse(personResponse *model.PersonResponse, person model.Person) (model.PersonResponse, utils.Error) {
+	user, err := n.userRepo.GetUserById(person.UserId)
+	if err.Code != "" {
+		return *personResponse, err
+	}
+
+	*personResponse = person.ToResponse(user)
+
+	if person.AddressId != nil {
+		address, err := n.addressRepo.GetAddressById(*person.AddressId)
+		if err.Code != "" {
+			return *personResponse, err
+		}
+
+		if address.Id != 0 {
+			addressResponse := address.ToResponse()
+			personResponse.Address = &addressResponse
+		}
+	}
+
+	disabilities, err := n.personDisabilityRepo.GetPersonDisabilities(person.Id)
+	if err.Code != "" {
+		return *personResponse, err
+	}
+
+	if len(disabilities) > 0 {
+		var disabilitiesResponse []model.PersonDisabilityResponse
+
+		for _, disability := range disabilities {
+			disabilityResponse := disability.ToResponse()
+			disabilitiesResponse = append(disabilitiesResponse, disabilityResponse)
+		}
+
+		personResponse.Disabilities = &disabilitiesResponse
+	}
+
+	userConfig := model.DefaultConfig
+
+	if user.ConfigUrl != "" {
+		configService := NewConfigService(n.userRepo)
+		userConfig, err = configService.GetUserConfig(user.ConfigUrl)
+		if err.Code != "" {
+			return *personResponse, err
+		}
+	}
+
+	personResponse.User.Config = userConfig
+
+	return *personResponse, utils.Error{}
 }

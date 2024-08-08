@@ -13,6 +13,7 @@ type AuthController struct {
 	personService  service.PersonService
 	companyService service.CompanyService
 	addressService service.AddressService
+	configService  service.ConfigService
 }
 
 type TokenRequest struct {
@@ -20,13 +21,18 @@ type TokenRequest struct {
 }
 
 func NewAuthController(
-	authService AuthService, personService service.PersonService, companyService service.CompanyService, addressService service.AddressService,
+	authService AuthService,
+	personService service.PersonService,
+	companyService service.CompanyService,
+	addressService service.AddressService,
+	configService service.ConfigService,
 ) *AuthController {
 	return &AuthController{
 		authService:    authService,
 		personService:  personService,
 		companyService: companyService,
 		addressService: addressService,
+		configService:  configService,
 	}
 }
 
@@ -54,26 +60,45 @@ func (c *AuthController) Authenticate(ctx *fiber.Ctx) error {
 	}
 
 	user, err := c.authService.Authenticate(credentials)
-	if err != nil {
+	if err.Code != "" {
 		response = model.LoginResponse{
 			Message: err.Error(),
+			Code:    err.Code,
 		}
 
 		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	userConfig := model.DefaultConfig
+
+	if user.ConfigUrl != "" {
+		userConfig, err = c.configService.GetUserConfig(user.ConfigUrl)
+		if err.Code != "" {
+			response = model.LoginResponse{
+				Message: err.Error(),
+				Code:    err.Code,
+			}
+
+			return ctx.Status(http.StatusInternalServerError).JSON(response)
+		}
 	}
 
 	token, err := c.authService.GenerateToken(user)
-	if err != nil {
+	if err.Code != "" {
 		response = model.LoginResponse{
 			Message: err.Error(),
+			Code:    err.Code,
 		}
 
 		return ctx.Status(http.StatusBadRequest).JSON(response)
 	}
 
+	userResponse := user.ToResponse()
+	userResponse.Config = userConfig
+
 	response = model.LoginResponse{
 		Token:    token,
-		UserInfo: user.ToResponse(),
+		UserInfo: userResponse,
 	}
 
 	return ctx.Status(http.StatusOK).JSON(response)
@@ -103,31 +128,49 @@ func (c *AuthController) GetUserData(ctx *fiber.Ctx) error {
 	}
 
 	user, err := c.authService.GetUserData(token.Token)
-	if err != nil {
+	if err.Code != "" {
 		response = model.LoginResponse{
 			Message: err.Error(),
+			Code:    err.Code,
 		}
 
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
 	}
 
-	if user.RoleId == 2 {
-		company, err := c.companyService.GetCompanyByUserId(user.Id)
-		if err != nil {
+	userConfig := model.DefaultConfig
+
+	if user.ConfigUrl != "" {
+		userConfig, err = c.configService.GetUserConfig(user.ConfigUrl)
+		if err.Code != "" {
 			response = model.LoginResponse{
 				Message: err.Error(),
+				Code:    err.Code,
+			}
+
+			return ctx.Status(http.StatusInternalServerError).JSON(response)
+		}
+	}
+
+	if user.RoleId == 2 {
+		company, err := c.companyService.GetCompanyByUserId(user.Id)
+		if err.Code != "" {
+			response = model.LoginResponse{
+				Message: err.Error(),
+				Code:    err.Code,
 			}
 
 			return ctx.Status(http.StatusInternalServerError).JSON(response)
 		}
 
 		companyResponse := company.ToResponse(user)
+		companyResponse.User.Config = userConfig
 
 		if company.AddressId != nil {
 			address, err := c.addressService.GetAddressById(*company.AddressId)
-			if err != nil {
+			if err.Code != "" {
 				response = model.LoginResponse{
 					Message: err.Error(),
+					Code:    err.Code,
 				}
 
 				return ctx.Status(http.StatusInternalServerError).JSON(response)
@@ -149,18 +192,21 @@ func (c *AuthController) GetUserData(ctx *fiber.Ctx) error {
 		if err.Code != "" {
 			response = model.LoginResponse{
 				Message: err.Error(),
+				Code:    err.Code,
 			}
 
 			return ctx.Status(http.StatusInternalServerError).JSON(response)
 		}
 
 		personResponse := person.ToResponse(user)
+		personResponse.User.Config = userConfig
 
 		if person.AddressId != nil {
 			address, err := c.addressService.GetAddressById(*person.AddressId)
-			if err != nil {
+			if err.Code != "" {
 				response = model.LoginResponse{
 					Message: err.Error(),
+					Code:    err.Code,
 				}
 
 				return ctx.Status(http.StatusInternalServerError).JSON(response)

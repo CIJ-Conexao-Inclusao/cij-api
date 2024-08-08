@@ -1,9 +1,14 @@
 package utils
 
+import (
+	"cij_api/src/model"
+	"fmt"
+)
+
 type Error struct {
-	Message string   `json:"message"`
-	Code    string   `json:"code"`
-	Fields  []string `json:"fields,omitempty"`
+	Message string        `json:"message"`
+	Code    string        `json:"code"`
+	Fields  []model.Field `json:"fields,omitempty"`
 }
 
 func (e Error) Error() string {
@@ -14,8 +19,16 @@ func (e Error) GetCode() string {
 	return e.Code
 }
 
-func (e Error) GetFields() []string {
+func (e *Error) SetCode(code string) {
+	e.Code = code
+}
+
+func (e Error) GetFields() []model.Field {
 	return e.Fields
+}
+
+func NewErrorCode(errorType ErrorType, errorEntity ErrorEntity, identifier string) string {
+	return fmt.Sprintf("%d%d%s", errorType, errorEntity, identifier)
 }
 
 func NewError(message string, code string) Error {
@@ -25,7 +38,7 @@ func NewError(message string, code string) Error {
 	}
 }
 
-func NewErrorWithFields(message string, code string, fields []string) Error {
+func NewErrorWithFields(message string, code string, fields []model.Field) Error {
 	return Error{
 		Message: message,
 		Code:    code,
@@ -33,34 +46,24 @@ func NewErrorWithFields(message string, code string, fields []string) Error {
 	}
 }
 
-// User errors
-var (
-	FailedToCreateUser      = Error{Message: "failed to create user", Code: "ERR-1001"}
-	FailedToUpdateUser      = Error{Message: "failed to update user", Code: "ERR-1002"}
-	FailedToDeleteUser      = Error{Message: "failed to delete user", Code: "ERR-1003"}
-	FailedToGetUser         = Error{Message: "failed to get user", Code: "ERR-1004"}
-	FailedToEncryptPassword = Error{Message: "failed to encrypt password", Code: "ERR-1005"}
+// Error code
+type ErrorType int
+
+const (
+	ValidationErrorCode ErrorType = 1
+	DatabaseErrorCode   ErrorType = 2
+	ServiceErrorCode    ErrorType = 3
+	ControllerErrorCode ErrorType = 4
 )
 
-// Person errors
-var (
-	FailedToCreatePerson = Error{Message: "failed to create person", Code: "ERR-2001"}
-	FailedToGetPerson    = Error{Message: "failed to get person", Code: "ERR-2002"}
-	FailedToUpdatePerson = Error{Message: "failed to update person", Code: "ERR-2003"}
-	FailedToDeletePerson = Error{Message: "failed to delete person", Code: "ERR-2004"}
-	FailedToListPeople   = Error{Message: "failed to list people", Code: "ERR-2005"}
-)
+type ErrorEntity int
 
-// Address errors
-var (
-	FailedToUpsertAddress = Error{Message: "failed to upsert address", Code: "ERR-3001"}
-	FailedToGetAddress    = Error{Message: "failed to get address", Code: "ERR-3002"}
-	FailedToDeleteAddress = Error{Message: "failed to delete address", Code: "ERR-3003"}
-)
-
-// Disability errors
-var (
-	FailedToUpsertDisability = Error{Message: "failed to upsert disability", Code: "ERR-4001"}
-	FailedToGetDisability    = Error{Message: "failed to get disability", Code: "ERR-4002"}
-	FailedToClearDisability  = Error{Message: "failed to clear disabilities", Code: "ERR-4003"}
+const (
+	UserErrorType       ErrorEntity = 1
+	PersonErrorType     ErrorEntity = 2
+	AddressErrorType    ErrorEntity = 3
+	DisabilityErrorType ErrorEntity = 4
+	CompanyErrorType    ErrorEntity = 5
+	NewsErrorType       ErrorEntity = 6
+	ConfigErrorType     ErrorEntity = 7
 )

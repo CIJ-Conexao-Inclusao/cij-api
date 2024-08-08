@@ -3,6 +3,7 @@ package controller
 import (
 	"cij_api/src/model"
 	"cij_api/src/service"
+	"cij_api/src/utils"
 	"net/http"
 	"strconv"
 
@@ -19,6 +20,12 @@ func NewCompanyController(companyService service.CompanyService) *CompanyControl
 	}
 }
 
+func companyControllerError(message string, code string, fields []model.Field) utils.Error {
+	errorCode := utils.NewErrorCode(utils.ControllerErrorCode, utils.CompanyErrorType, code)
+
+	return utils.NewErrorWithFields(message, errorCode, fields)
+}
+
 // CreateCompany
 // @Summary Create a new company.
 // @Description create a new company and their user.
@@ -26,6 +33,7 @@ func NewCompanyController(companyService service.CompanyService) *CompanyControl
 // @Accept application/json
 // @Produce json
 // @Param company body model.CompanyRequest true "Company"
+// @Param Authorization header string true "Token"
 // @Success 200 {object} string "success"
 // @Failure 400 {object} string "bad request"
 // @Failure 500 {object} string "internal server error"
@@ -42,9 +50,50 @@ func (n *CompanyController) CreateCompany(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(response)
 	}
 
-	if err := n.companyService.CreateCompany(companyRequest); err != nil {
+	if err := validateCompanyRequiredFields(companyRequest); err.Code != "" {
 		response = model.Response{
 			Message: err.Error(),
+			Code:    err.Code,
+			Fields:  err.Fields,
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	if err := n.validateCompany(companyRequest); err.Code != "" {
+		response = model.Response{
+			Message: err.Error(),
+			Code:    err.Code,
+			Fields:  err.Fields,
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	if err := utils.ValidateUser(companyRequest.User); err.Code != "" {
+		response = model.Response{
+			Message: err.Error(),
+			Code:    err.Code,
+			Fields:  err.Fields,
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	if err := utils.ValidateAddress(companyRequest.Address); err.Code != "" {
+		response = model.Response{
+			Message: err.Error(),
+			Code:    err.Code,
+			Fields:  err.Fields,
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	if err := n.companyService.CreateCompany(companyRequest); err.Code != "" {
+		response = model.Response{
+			Message: err.Error(),
+			Code:    err.Code,
 		}
 
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
@@ -71,20 +120,13 @@ func (n *CompanyController) ListCompanies(ctx *fiber.Ctx) error {
 	var response model.Response
 
 	companies, err := n.companyService.ListCompanies()
-	if err != nil {
+	if err.Code != "" {
 		response = model.Response{
 			Message: err.Error(),
+			Code:    err.Code,
 		}
 
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
-	}
-
-	if len(companies) == 0 {
-		response = model.Response{
-			Message: "no companies were found",
-		}
-
-		return ctx.Status(http.StatusNotFound).JSON(response)
 	}
 
 	response = model.Response{
@@ -103,6 +145,7 @@ func (n *CompanyController) ListCompanies(ctx *fiber.Ctx) error {
 // @Produce json
 // @Param company body model.CompanyRequest true "Company"
 // @Param id path string true "Company ID"
+// @Param Authorization header string true "Token"
 // @Success 200 {object} string "success"
 // @Failure 400 {object} string "bad request"
 // @Failure 500 {object} string "internal server error"
@@ -130,9 +173,10 @@ func (n *CompanyController) UpdateCompany(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(response)
 	}
 
-	if err := n.companyService.UpdateCompany(companyRequest, idInt); err != nil {
+	if err := n.companyService.UpdateCompany(companyRequest, idInt); err.Code != "" {
 		response = model.Response{
 			Message: err.Error(),
+			Code:    err.Code,
 		}
 
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
@@ -152,6 +196,7 @@ func (n *CompanyController) UpdateCompany(ctx *fiber.Ctx) error {
 // @Accept application/json
 // @Produce json
 // @Param id path string true "Company ID"
+// @Param Authorization header string true "Token"
 // @Success 200 {object} string "success"
 // @Failure 400 {object} string "bad request"
 // @Failure 500 {object} string "internal server error"
@@ -170,7 +215,7 @@ func (n *CompanyController) DeleteCompany(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(response)
 	}
 
-	if err := n.companyService.DeleteCompany(idInt); err != nil {
+	if err := n.companyService.DeleteCompany(idInt); err.Code != "" {
 		response = model.Response{
 			Message: err.Error(),
 		}
@@ -183,4 +228,62 @@ func (n *CompanyController) DeleteCompany(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(http.StatusOK).JSON(response)
+}
+
+func validateCompanyRequiredFields(company model.CompanyRequest) utils.Error {
+	fieldsWithError := []model.Field{}
+
+	if company.Cnpj == "" {
+		fieldsWithError = append(fieldsWithError, model.Field{Name: "cnpj"})
+	}
+
+	if company.Name == "" {
+		fieldsWithError = append(fieldsWithError, model.Field{Name: "name"})
+	}
+
+	if company.Phone == "" {
+		fieldsWithError = append(fieldsWithError, model.Field{Name: "phone"})
+	}
+
+	if len(fieldsWithError) > 0 {
+		errorCode := utils.NewErrorCode(utils.ValidationErrorCode, utils.CompanyErrorType, "01")
+
+		return utils.NewErrorWithFields("required fields are missing", errorCode, fieldsWithError)
+	}
+
+	return utils.Error{}
+}
+
+func (c *CompanyController) validateCompany(companyRequest model.CompanyRequest) utils.Error {
+	fieldsWithError := []model.Field{}
+
+	if len(companyRequest.Cnpj) != 14 {
+		fieldsWithError = append(fieldsWithError, model.Field{Name: "cnpj", Value: "cnpj must have 14 digits"})
+	}
+
+	company, err := c.companyService.GetCompanyByCnpj(companyRequest.Cnpj)
+	if err.Code != "" {
+		return err
+	}
+
+	if company.Id != 0 {
+		return companyControllerError("cnpj already registered", "01", nil)
+	}
+
+	companyUser, err := c.companyService.GetUserByEmail(companyRequest.User.Email)
+	if err.Code != "" {
+		return err
+	}
+
+	if companyUser.Id != 0 {
+		return companyControllerError("email already registered", "02", nil)
+	}
+
+	if len(fieldsWithError) > 0 {
+		errorCode := utils.NewErrorCode(utils.ValidationErrorCode, utils.CompanyErrorType, "02")
+
+		return utils.NewErrorWithFields("invalid fields", errorCode, fieldsWithError)
+	}
+
+	return utils.Error{}
 }

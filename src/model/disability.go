@@ -14,6 +14,12 @@ type Disability struct {
 }
 
 type DisabilityRequest struct {
+	Category    string `json:"category"`
+	Description string `json:"description"`
+	Rate        string `json:"rate"`
+}
+
+type PersonDisabilityRequest struct {
 	Id       int  `json:"id"`
 	Acquired bool `json:"acquired"`
 }
@@ -32,5 +38,13 @@ func (d *Disability) ToResponse() DisabilityResponse {
 		Category:    d.Category,
 		Description: d.Description,
 		Rate:        d.Rate,
+	}
+}
+
+func (dr *DisabilityRequest) ToModel() Disability {
+	return Disability{
+		Category:    dr.Category,
+		Description: dr.Description,
+		Rate:        dr.Rate,
 	}
 }

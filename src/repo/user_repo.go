@@ -2,84 +2,112 @@ package repo
 
 import (
 	"cij_api/src/model"
-	"errors"
+	"cij_api/src/utils"
 
 	"gorm.io/gorm"
 )
 
 type UserRepo interface {
-	CreateUser(createUser model.User) (int, error)
-	ListUsers() ([]model.User, error)
-	GetUserByEmail(email string) (model.User, error)
-	GetUserById(id int) (model.User, error)
-	UpdateUser(user model.User, userId int) error
-	DeleteUser(id int) error
+	BaseRepoMethods
+
+	CreateUser(createUser model.User, tx *gorm.DB) (int, utils.Error)
+	ListUsers() ([]model.User, utils.Error)
+	GetUserByEmail(email string) (model.User, utils.Error)
+	GetUserById(id int) (model.User, utils.Error)
+	UpdateUser(user model.User, userId int) utils.Error
+	UpdateUserConfig(configUrl string, userEmail string) utils.Error
+	DeleteUser(id int) utils.Error
 }
 
 type userRepo struct {
+	BaseRepo
 	db *gorm.DB
 }
 
 func NewUserRepo(db *gorm.DB) UserRepo {
-	return &userRepo{
+	repo := &userRepo{
 		db: db,
 	}
+
+	repo.SetRepo(repo.db)
+
+	return repo
 }
 
-func (n *userRepo) CreateUser(createUser model.User) (int, error) {
-	if err := n.db.Create(&createUser).Error; err != nil {
-		return 0, errors.New("failed to create user")
+func userRepoError(message string, code string) utils.Error {
+	errorCode := utils.NewErrorCode(utils.DatabaseErrorCode, utils.UserErrorType, code)
+
+	return utils.NewError(message, errorCode)
+}
+
+func (n *userRepo) CreateUser(createUser model.User, tx *gorm.DB) (int, utils.Error) {
+	databaseConn := n.db
+
+	if tx != nil {
+		databaseConn = tx
 	}
 
-	return createUser.Id, nil
+	if err := databaseConn.Create(&createUser).Error; err != nil {
+		return 0, userRepoError("failed to create the user", "01")
+	}
+
+	return createUser.Id, utils.Error{}
 }
 
-func (n *userRepo) ListUsers() ([]model.User, error) {
+func (n *userRepo) ListUsers() ([]model.User, utils.Error) {
 	var users []model.User
 
 	err := n.db.Model(model.User{}).Find(&users).Error
 	if err != nil {
-		return users, errors.New("error on list users from database")
+		return users, userRepoError("failed to list the users", "02")
 	}
 
-	return users, nil
+	return users, utils.Error{}
 }
 
-func (n *userRepo) GetUserByEmail(email string) (model.User, error) {
+func (n *userRepo) GetUserByEmail(email string) (model.User, utils.Error) {
 	var user model.User
 
 	err := n.db.Model(model.User{}).Preload("Role").Where("email = ?", email).Find(&user).Error
 	if err != nil {
-		return user, errors.New("failed to get the user")
+		return user, userRepoError("failed to get the user", "03")
 	}
 
-	return user, nil
+	return user, utils.Error{}
 }
 
-func (n *userRepo) GetUserById(id int) (model.User, error) {
+func (n *userRepo) GetUserById(id int) (model.User, utils.Error) {
 	var user model.User
 
 	err := n.db.Model(model.User{}).Preload("Role").Where("id = ?", id).Find(&user).Error
 	if err != nil {
-		return user, errors.New("failed to get the user")
+		return user, userRepoError("failed to get the user", "04")
 	}
 
-	return user, nil
+	return user, utils.Error{}
 }
 
-func (n *userRepo) UpdateUser(user model.User, userId int) error {
+func (n *userRepo) UpdateUser(user model.User, userId int) utils.Error {
 	if err := n.db.Model(model.User{}).Where("id = ?", userId).Updates(user).Error; err != nil {
-		return errors.New("failed to update the user")
+		return userRepoError("failed to update the user", "05")
 	}
 
-	return nil
+	return utils.Error{}
 }
 
-func (n *userRepo) DeleteUser(userId int) error {
+func (n *userRepo) UpdateUserConfig(configUrl string, userEmail string) utils.Error {
+	if err := n.db.Model(model.User{}).Where("email = ?", userEmail).Update("config_url", configUrl).Error; err != nil {
+		return userRepoError("failed to update the user config", "07")
+	}
+
+	return utils.Error{}
+}
+
+func (n *userRepo) DeleteUser(userId int) utils.Error {
 	err := n.db.Model(model.User{}).Where("id = ?", userId).Unscoped().Delete(&model.User{}).Error
 	if err != nil {
-		return errors.New("failed to delete the user")
+		return userRepoError("failed to delete the user", "06")
 	}
 
-	return nil
+	return utils.Error{}
 }

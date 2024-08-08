@@ -26,7 +26,7 @@ func ConnectionDB(config *config.Config) *gorm.DB {
 		panic("failed to enter database cij")
 	}
 
-	fmt.Print("Database connected")
+	fmt.Print("Database connected\n\n")
 
 	return client
 }

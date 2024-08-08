@@ -3,11 +3,11 @@ package service
 import (
 	"cij_api/src/model"
 	"cij_api/src/repo"
-	"errors"
+	"cij_api/src/utils"
 )
 
 type AddressService interface {
-	GetAddressById(id int) (model.Address, error)
+	GetAddressById(id int) (model.Address, utils.Error)
 }
 
 type addressService struct {
@@ -20,11 +20,11 @@ func NewAddressService(addressRepo repo.AddressRepo) AddressService {
 	}
 }
 
-func (n *addressService) GetAddressById(id int) (model.Address, error) {
+func (n *addressService) GetAddressById(id int) (model.Address, utils.Error) {
 	address, err := n.addressRepo.GetAddressById(id)
-	if err != nil {
-		return address, errors.New("failed to get address")
+	if err.Code != "" {
+		return address, err
 	}
 
-	return address, nil
+	return address, utils.Error{}
 }

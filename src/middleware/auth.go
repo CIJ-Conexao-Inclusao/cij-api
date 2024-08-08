@@ -13,7 +13,7 @@ type CustomClaims struct {
 	jwt.StandardClaims
 }
 
-const USER_ROLE = "user"
+const PERSON_ROLE = "person"
 const COMPANY_ROLE = "company"
 const ADMIN_ROLE = "admin"
 
@@ -28,7 +28,7 @@ func AuthUser(ctx *fiber.Ctx) error {
 	claims := token.Claims.(jwt.MapClaims)
 	tokenRole := claims["role"].(string)
 
-	if tokenRole != USER_ROLE {
+	if tokenRole != PERSON_ROLE {
 		response = model.Response{
 			Message: "role don't have permission",
 		}

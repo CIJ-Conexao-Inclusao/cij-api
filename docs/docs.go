@@ -76,6 +76,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.CompanyRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -129,6 +136,13 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -171,6 +185,13 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -190,6 +211,50 @@ const docTemplate = `{
                         "description": "internal server error",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/config/{email}": {
+            "get": {
+                "description": "Get user config",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get user config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Config"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
                         }
                     }
                 }
@@ -347,6 +412,75 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "create a new news.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Create a new news.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "author",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "date",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "banner",
+                        "name": "banner",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "author_image",
+                        "name": "authorImage",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/people": {
@@ -432,6 +566,48 @@ const docTemplate = `{
             }
         },
         "/people/:id": {
+            "get": {
+                "description": "get a person by their ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "People"
+                ],
+                "summary": "Get a person by ID.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Person ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.PersonResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.MessageResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.MessageResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "update an existent person and their user.",
                 "consumes": [
@@ -653,6 +829,21 @@ const docTemplate = `{
                 }
             }
         },
+        "enum.ColorBlindnessEnum": {
+            "type": "string",
+            "enum": [
+                "normal",
+                "protanopia",
+                "deuteranopia",
+                "tritanopia"
+            ],
+            "x-enum-varnames": [
+                "Normal",
+                "Protanopia",
+                "Deuteranopia",
+                "Tritanopia"
+            ]
+        },
         "enum.GenderEnum": {
             "type": "string",
             "enum": [
@@ -664,6 +855,19 @@ const docTemplate = `{
                 "Male",
                 "Female",
                 "Other"
+            ]
+        },
+        "enum.ThemeEnum": {
+            "type": "string",
+            "enum": [
+                "light",
+                "dark",
+                "system"
+            ],
+            "x-enum-varnames": [
+                "Light",
+                "Dark",
+                "System"
             ]
         },
         "model.AddressRequest": {
@@ -770,6 +974,29 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Config": {
+            "type": "object",
+            "properties": {
+                "color_blindness": {
+                    "$ref": "#/definitions/enum.ColorBlindnessEnum"
+                },
+                "font_size": {
+                    "type": "integer"
+                },
+                "screen_reader": {
+                    "type": "boolean"
+                },
+                "system_colors": {
+                    "$ref": "#/definitions/model.SystemColors"
+                },
+                "theme": {
+                    "$ref": "#/definitions/enum.ThemeEnum"
+                },
+                "voice_capture": {
+                    "type": "boolean"
+                }
+            }
+        },
         "model.Credentials": {
             "type": "object",
             "properties": {
@@ -792,9 +1019,23 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Field": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
         "model.LoginResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "string"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -808,6 +1049,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "author": {
+                    "type": "string"
+                },
+                "author_image": {
+                    "type": "string"
+                },
+                "banner": {
                     "type": "string"
                 },
                 "date": {
@@ -905,6 +1152,64 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {},
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Field"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SystemChartColors": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "model.SystemColors": {
+            "type": "object",
+            "properties": {
+                "chart_colors": {
+                    "$ref": "#/definitions/model.SystemChartColors"
+                },
+                "primary_colors": {
+                    "$ref": "#/definitions/model.SystemPrimaryColors"
+                }
+            }
+        },
+        "model.SystemPrimaryColors": {
+            "type": "object",
+            "properties": {
+                "background_color": {
+                    "type": "string"
+                },
+                "font_color": {
+                    "type": "string"
+                },
+                "input_color": {
+                    "type": "string"
+                },
+                "primary_color": {
+                    "type": "string"
+                },
+                "secondary_color": {
+                    "type": "string"
+                },
+                "secondary_font_color": {
+                    "type": "string"
+                }
+            }
+        },
         "model.UserRequest": {
             "type": "object",
             "properties": {
@@ -919,6 +1224,9 @@ const docTemplate = `{
         "model.UserResponse": {
             "type": "object",
             "properties": {
+                "config": {
+                    "$ref": "#/definitions/model.Config"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -936,7 +1244,7 @@ const docTemplate = `{
                 "fields": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.Field"
                     }
                 },
                 "message": {
@@ -953,8 +1261,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "conexao-inclusao.com",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "GO Clean API",
-	Description:      "This the API for the CIJ project",
+	Title:            "CIJ Project API",
+	Description:      "This is the API for the CIJ project",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

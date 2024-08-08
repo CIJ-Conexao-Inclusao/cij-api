@@ -10,6 +10,18 @@ definitions:
       message:
         type: string
     type: object
+  enum.ColorBlindnessEnum:
+    enum:
+    - normal
+    - protanopia
+    - deuteranopia
+    - tritanopia
+    type: string
+    x-enum-varnames:
+    - Normal
+    - Protanopia
+    - Deuteranopia
+    - Tritanopia
   enum.GenderEnum:
     enum:
     - male
@@ -20,6 +32,16 @@ definitions:
     - Male
     - Female
     - Other
+  enum.ThemeEnum:
+    enum:
+    - light
+    - dark
+    - system
+    type: string
+    x-enum-varnames:
+    - Light
+    - Dark
+    - System
   model.AddressRequest:
     properties:
       city:
@@ -88,6 +110,21 @@ definitions:
       user:
         $ref: '#/definitions/model.UserResponse'
     type: object
+  model.Config:
+    properties:
+      color_blindness:
+        $ref: '#/definitions/enum.ColorBlindnessEnum'
+      font_size:
+        type: integer
+      screen_reader:
+        type: boolean
+      system_colors:
+        $ref: '#/definitions/model.SystemColors'
+      theme:
+        $ref: '#/definitions/enum.ThemeEnum'
+      voice_capture:
+        type: boolean
+    type: object
   model.Credentials:
     properties:
       email:
@@ -102,8 +139,17 @@ definitions:
       id:
         type: integer
     type: object
+  model.Field:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    type: object
   model.LoginResponse:
     properties:
+      code:
+        type: string
       message:
         type: string
       token:
@@ -113,6 +159,10 @@ definitions:
   model.NewsResponse:
     properties:
       author:
+        type: string
+      author_image:
+        type: string
+      banner:
         type: string
       date:
         type: string
@@ -176,6 +226,44 @@ definitions:
       user:
         $ref: '#/definitions/model.UserResponse'
     type: object
+  model.Response:
+    properties:
+      code:
+        type: string
+      data: {}
+      fields:
+        items:
+          $ref: '#/definitions/model.Field'
+        type: array
+      message:
+        type: string
+    type: object
+  model.SystemChartColors:
+    additionalProperties:
+      type: string
+    type: object
+  model.SystemColors:
+    properties:
+      chart_colors:
+        $ref: '#/definitions/model.SystemChartColors'
+      primary_colors:
+        $ref: '#/definitions/model.SystemPrimaryColors'
+    type: object
+  model.SystemPrimaryColors:
+    properties:
+      background_color:
+        type: string
+      font_color:
+        type: string
+      input_color:
+        type: string
+      primary_color:
+        type: string
+      secondary_color:
+        type: string
+      secondary_font_color:
+        type: string
+    type: object
   model.UserRequest:
     properties:
       email:
@@ -185,6 +273,8 @@ definitions:
     type: object
   model.UserResponse:
     properties:
+      config:
+        $ref: '#/definitions/model.Config'
       email:
         type: string
       id:
@@ -196,7 +286,7 @@ definitions:
         type: string
       fields:
         items:
-          type: string
+          $ref: '#/definitions/model.Field'
         type: array
       message:
         type: string
@@ -206,8 +296,8 @@ info:
   contact:
     email: cauakathdev@gmail.com
     name: API Support
-  description: This the API for the CIJ project
-  title: GO Clean API
+  description: This is the API for the CIJ project
+  title: CIJ Project API
   version: "1.0"
 paths:
   /companies:
@@ -246,6 +336,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.CompanyRequest'
+      - description: Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -273,6 +368,11 @@ paths:
       - description: Company ID
         in: path
         name: id
+        required: true
+        type: string
+      - description: Token
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -309,6 +409,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -327,6 +432,35 @@ paths:
       summary: Update a company.
       tags:
       - Companies
+  /config/{email}:
+    get:
+      consumes:
+      - application/json
+      description: Get user config
+      parameters:
+      - description: User email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Config'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get user config
+      tags:
+      - config
   /get-user-data:
     post:
       consumes:
@@ -428,6 +562,51 @@ paths:
       summary: List all registered news.
       tags:
       - News
+    post:
+      consumes:
+      - application/json
+      description: create a new news.
+      parameters:
+      - in: formData
+        name: author
+        type: string
+      - in: formData
+        name: date
+        type: string
+      - in: formData
+        name: description
+        type: string
+      - in: formData
+        name: title
+        type: string
+      - description: banner
+        in: formData
+        name: banner
+        required: true
+        type: file
+      - description: author_image
+        in: formData
+        name: authorImage
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Create a new news.
+      tags:
+      - News
   /people:
     get:
       consumes:
@@ -509,6 +688,34 @@ paths:
           schema:
             $ref: '#/definitions/controller.MessageResponse'
       summary: Delete a person.
+      tags:
+      - People
+    get:
+      consumes:
+      - application/json
+      description: get a person by their ID.
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PersonResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controller.MessageResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.MessageResponse'
+      summary: Get a person by ID.
       tags:
       - People
     put:

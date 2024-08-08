@@ -7,11 +7,12 @@ import (
 
 type User struct {
 	*gorm.Model
-	Id       int    `gorm:"type:int;primaryKey;autoIncrement;not null" json:"id"`
-	Email    string `gorm:"type:varchar(255);not null;unique" json:"email"`
-	Password string `gorm:"type:varchar(255);not null" json:"password"`
-	RoleId   int    `gorm:"type:int;not null" json:"role_id"`
-	Role     *Role
+	Id        int    `gorm:"type:int;primaryKey;autoIncrement;not null" json:"id"`
+	Email     string `gorm:"type:varchar(255);not null;unique" json:"email"`
+	Password  string `gorm:"type:varchar(255);not null" json:"password"`
+	ConfigUrl string `gorm:"type:varchar(255);not null" json:"config_url"`
+	RoleId    RoleId `gorm:"type:int;not null" json:"role_id"`
+	Role      *Role
 }
 
 type UserRequest struct {
@@ -20,8 +21,9 @@ type UserRequest struct {
 }
 
 type UserResponse struct {
-	Id    int    `json:"id"`
-	Email string `json:"email"`
+	Id     int    `json:"id"`
+	Email  string `json:"email"`
+	Config Config `json:"config,omitempty"`
 }
 
 func (u *User) ValidatePassword(password string) bool {
