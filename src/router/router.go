@@ -36,6 +36,10 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	newsService := service.NewNewsService(newsRepo)
 	newsController := controller.NewNewsController(newsService)
 
+	disabilityRepo := repo.NewDisabilityRepo(db)
+	disabilityService := service.NewDisabilityService(disabilityRepo)
+	disabilityController := controller.NewDisabilityController(disabilityService)
+
 	configService := service.NewConfigService(userRepo)
 	configController := controller.NewConfigController(configService)
 
@@ -83,11 +87,16 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 		api.Put("/:email", configController.UpdateUserConfig)
 	}
 
+	api = router.Group("/disabilities")
+	{
+		api.Post("/", disabilityController.CreateDisability)
+	}
+
 	basePath := getBasePath()
 	fmt.Printf("API Routes:\n")
 
 	for _, r := range router.GetRoutes() {
-		if (r.Method == "GET" || r.Method == "POST" || r.Method == "PUT" || r.Method == "DELETE") && r.Path != "/health" {
+		if (r.Method == "GET" || r.Method == "POST" || r.Method == "PUT" || r.Method == "DELETE") && r.Path != "/health" && r.Path != "/" {
 			fullPath := basePath + r.Path
 			paintMethod(r.Method)
 			paintPath(fullPath)

@@ -19,7 +19,7 @@ type PersonService interface {
 	GetDisabilityById(disabilityId int) (model.Disability, utils.Error)
 	UpdatePerson(person model.PersonRequest, personId int) utils.Error
 	UpdatePersonAddress(address model.AddressRequest, personId int, tx *gorm.DB) utils.Error
-	UpdatePersonDisabilities(disabilities []model.DisabilityRequest, personId int, tx *gorm.DB) utils.Error
+	UpdatePersonDisabilities(disabilities []model.PersonDisabilityRequest, personId int, tx *gorm.DB) utils.Error
 	DeletePerson(personId int) utils.Error
 }
 
@@ -235,7 +235,7 @@ func (n *personService) GetDisabilityById(id int) (model.Disability, utils.Error
 	return disability, utils.Error{}
 }
 
-func (n *personService) UpdatePersonDisabilities(disabilities []model.DisabilityRequest, personId int, tx *gorm.DB) utils.Error {
+func (n *personService) UpdatePersonDisabilities(disabilities []model.PersonDisabilityRequest, personId int, tx *gorm.DB) utils.Error {
 	person, err := n.personRepo.GetPersonById(personId, tx)
 	if err.Code != "" {
 		return err
