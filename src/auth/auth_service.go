@@ -4,6 +4,7 @@ import (
 	"cij_api/src/config"
 	"cij_api/src/model"
 	"cij_api/src/repo"
+	"cij_api/src/service"
 	"cij_api/src/utils"
 	"time"
 
@@ -11,12 +12,14 @@ import (
 )
 
 type AuthService struct {
-	userRepo repo.UserRepo
+	userRepo     repo.UserRepo
+	activityRepo repo.ActivityRepo
 }
 
-func NewAuthService(userRepo repo.UserRepo) *AuthService {
+func NewAuthService(userRepo repo.UserRepo, activityRepo repo.ActivityRepo) *AuthService {
 	return &AuthService{
-		userRepo: userRepo,
+		userRepo:     userRepo,
+		activityRepo: activityRepo,
 	}
 }
 
@@ -82,6 +85,18 @@ func (s *AuthService) Authenticate(credentials model.Credentials) (model.User, u
 
 	if !user.ValidatePassword(credentials.Password) {
 		return user, authServiceError("invalid password", "04")
+	}
+
+	activityService := service.NewActivityService(s.activityRepo)
+	activity := model.Activity{
+		Type:        "login",
+		Description: "User" + user.Email + "logged in",
+		Actor:       user.Email,
+	}
+
+	activityError := activityService.CreateActivity(&activity)
+	if activityError.Code != "" {
+		return user, activityError
 	}
 
 	return user, utils.Error{}

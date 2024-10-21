@@ -18,6 +18,7 @@ import (
 
 func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	userRepo := repo.NewUserRepo(db)
+	activityRepo := repo.NewActivityRepo(db)
 
 	addressRepo := repo.NewAddressRepo(db)
 	addressService := service.NewAddressService(addressRepo)
@@ -25,11 +26,11 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	personDisabilityRepo := repo.NewPersonDisabilityRepo(db)
 
 	personRepo := repo.NewPersonRepo(db)
-	personService := service.NewPersonService(personRepo, userRepo, addressRepo, personDisabilityRepo)
+	personService := service.NewPersonService(personRepo, userRepo, addressRepo, personDisabilityRepo, activityRepo)
 	personController := controller.NewPersonController(personService)
 
 	companyRepo := repo.NewCompanyRepo(db)
-	companyService := service.NewCompanyService(companyRepo, userRepo, addressRepo)
+	companyService := service.NewCompanyService(companyRepo, userRepo, addressRepo, activityRepo)
 	companyController := controller.NewCompanyController(companyService)
 
 	newsRepo := repo.NewNewsRepo(db)
@@ -43,7 +44,7 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	configService := service.NewConfigService(userRepo)
 	configController := controller.NewConfigController(configService)
 
-	authService := auth.NewAuthService(userRepo)
+	authService := auth.NewAuthService(userRepo, activityRepo)
 	authController := auth.NewAuthController(*authService, personService, companyService, addressService, configService)
 
 	router.Get("/health", HealthCheck)

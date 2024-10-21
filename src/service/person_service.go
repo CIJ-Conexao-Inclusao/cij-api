@@ -28,6 +28,7 @@ type personService struct {
 	userRepo             repo.UserRepo
 	addressRepo          repo.AddressRepo
 	personDisabilityRepo repo.PersonDisabilityRepo
+	activityRepo         repo.ActivityRepo
 }
 
 func NewPersonService(
@@ -35,12 +36,14 @@ func NewPersonService(
 	userRepo repo.UserRepo,
 	addressRepo repo.AddressRepo,
 	personDisabilityRepo repo.PersonDisabilityRepo,
+	activityRepo repo.ActivityRepo,
 ) PersonService {
 	return &personService{
 		personRepo:           personRepo,
 		userRepo:             userRepo,
 		addressRepo:          addressRepo,
 		personDisabilityRepo: personDisabilityRepo,
+		activityRepo:         activityRepo,
 	}
 }
 
@@ -115,6 +118,18 @@ func (n *personService) CreatePerson(createPerson model.PersonRequest) utils.Err
 
 	if errTx != nil {
 		return personServiceError("failed to create the person", "02")
+	}
+
+	activityService := NewActivityService(n.activityRepo)
+	activity := model.Activity{
+		Type:        "register_person",
+		Description: "Person " + userInfo.Email + " registered",
+		Actor:       userInfo.Email,
+	}
+
+	activityError := activityService.CreateActivity(&activity)
+	if activityError.Code != "" {
+		return activityError
 	}
 
 	configService := NewConfigService(n.userRepo)
