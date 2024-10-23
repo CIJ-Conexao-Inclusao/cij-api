@@ -46,7 +46,7 @@ func (a *activityRepo) CreateActivity(activity *model.Activity) utils.Error {
 func (a *activityRepo) GetActivitiesByTypeAndPeriod(activityType string, startDate string, endDate string) ([]model.Activity, utils.Error) {
 	var activities []model.Activity
 
-	if err := a.db.Where("type = ? AND date >= ? AND date <= ?", activityType, startDate, endDate).Find(&activities).Error; err != nil {
+	if err := a.db.Where("type = ? AND created_at >= ? AND created_at <= ?", activityType, startDate, endDate).Find(&activities).Error; err != nil {
 		return nil, activityRepoError("failed to get the activities", "02")
 	}
 

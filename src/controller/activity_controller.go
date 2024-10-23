@@ -44,24 +44,39 @@ func (a *ActivityController) CreateActivity(ctx *fiber.Ctx) error {
 
 	response = model.Response{
 		Message: "Activity created successfully",
-		Data:    activity,
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(response)
 }
 
 func (a *ActivityController) GetActivitiesByTypeAndPeriod(ctx *fiber.Ctx) error {
-	activityType := ctx.Params("type")
-	startDate := ctx.Params("start_date")
-	endDate := ctx.Params("end_date")
+	activityType := ctx.Query("type")
+	startDate := ctx.Query("start_date")
+	endDate := ctx.Query("end_date")
 
 	startDateInt, err := strconv.ParseInt(startDate, 10, 64)
-
-	activities, err := a.activityService.GetActivitiesByTypeAndPeriod(activityType, startDate, endDate)
-	if err.Code != "" {
+	if err != nil {
 		response := model.Response{
-			Message: err.Error(),
-			Code:    err.Code,
+			Message: "Invalid start date",
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	endDateInt, err := strconv.ParseInt(endDate, 10, 64)
+	if err != nil {
+		response := model.Response{
+			Message: "Invalid end date",
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	activities, activitiesError := a.activityService.GetActivitiesByTypeAndPeriod(activityType, startDateInt, endDateInt)
+	if activitiesError.Code != "" {
+		response := model.Response{
+			Message: activitiesError.Error(),
+			Code:    activitiesError.Code,
 		}
 
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
