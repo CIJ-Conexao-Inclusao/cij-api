@@ -50,6 +50,9 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	activityService := service.NewActivityService(activityRepo)
 	activityController := controller.NewActivityController(activityService)
 
+	reportsService := service.NewReportsService(personDisabilityRepo)
+	reportsController := controller.NewReportsController(reportsService)
+
 	router.Get("/health", HealthCheck)
 
 	router.Get("/swagger/*", swagger.HandlerDefault)
@@ -102,6 +105,12 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 
 		api.Use(middleware.AuthAdmin)
 		api.Post("/", activityController.CreateActivity)
+	}
+
+	api = router.Group("/reports")
+	{
+		api.Get("/disabilities", reportsController.GetDisabilityTotals)
+		api.Get("/disabilities/:neighborhood", reportsController.GetDisabilityTotalsByNeighborhood)
 	}
 
 	basePath := getBasePath()
