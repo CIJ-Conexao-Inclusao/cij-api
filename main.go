@@ -41,6 +41,7 @@ func migrateDb(db *gorm.DB) {
 	db.AutoMigrate(&model.Company{})
 	db.AutoMigrate(&model.News{})
 	db.AutoMigrate(&model.Role{})
+	db.AutoMigrate(&model.Activity{})
 
 	createDefaultRoles(db)
 }

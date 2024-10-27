@@ -20,16 +20,23 @@ type CompanyService interface {
 }
 
 type companyService struct {
-	companyRepo repo.CompanyRepo
-	userRepo    repo.UserRepo
-	addressRepo repo.AddressRepo
+	companyRepo  repo.CompanyRepo
+	userRepo     repo.UserRepo
+	addressRepo  repo.AddressRepo
+	activityRepo repo.ActivityRepo
 }
 
-func NewCompanyService(companyRepo repo.CompanyRepo, userRepo repo.UserRepo, addressRepo repo.AddressRepo) CompanyService {
+func NewCompanyService(
+	companyRepo repo.CompanyRepo,
+	userRepo repo.UserRepo,
+	addressRepo repo.AddressRepo,
+	activityRepo repo.ActivityRepo,
+) CompanyService {
 	return &companyService{
-		companyRepo: companyRepo,
-		userRepo:    userRepo,
-		addressRepo: addressRepo,
+		companyRepo:  companyRepo,
+		userRepo:     userRepo,
+		addressRepo:  addressRepo,
+		activityRepo: activityRepo,
 	}
 }
 
@@ -122,6 +129,18 @@ func (n *companyService) CreateCompany(createCompany model.CompanyRequest) utils
 
 	if errTx != nil {
 		return companyServiceError("failed to create the company", "02")
+	}
+
+	activityService := NewActivityService(n.activityRepo)
+	activity := model.Activity{
+		Type:        "register_company",
+		Description: "Company " + userInfo.Email + " registered",
+		Actor:       userInfo.Email,
+	}
+
+	activityError := activityService.CreateActivity(&activity)
+	if activityError.Code != "" {
+		return activityError
 	}
 
 	return utils.Error{}
