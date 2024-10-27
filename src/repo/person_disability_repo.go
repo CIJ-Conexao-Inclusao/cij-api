@@ -15,6 +15,10 @@ type PersonDisabilityRepo interface {
 	GetDisabilityById(disabilityId int) (model.Disability, utils.Error)
 	UpsertPersonDisability(personDisability model.PersonDisability, tx *gorm.DB) utils.Error
 	ClearPersonDisability(personId int, tx *gorm.DB) utils.Error
+
+	// reports
+	CountDisability() (model.DisabilityTotals, utils.Error)
+	CountDisabilityByNeighborhood(neighborhood string) (model.DisabilityTotalsByNeighborhood, utils.Error)
 }
 
 type personDisabilityRepo struct {
@@ -91,4 +95,79 @@ func (n *personDisabilityRepo) ClearPersonDisability(personId int, tx *gorm.DB) 
 	}
 
 	return utils.Error{}
+}
+
+func (n *personDisabilityRepo) CountDisability() (model.DisabilityTotals, utils.Error) {
+	var result []struct {
+		Category string
+		Total    int
+	}
+
+	query := `
+		SELECT d.category, COUNT(*) AS total
+		FROM person_disabilities pd
+		JOIN disabilities d ON pd.disability_id = d.id
+		GROUP BY d.category;
+	`
+
+	if err := n.db.Raw(query).Scan(&result).Error; err != nil {
+		return model.DisabilityTotals{}, personDisabilityRepoError("failed to count the disabilities", "05")
+	}
+
+	totals := model.DisabilityTotals{}
+	for _, row := range result {
+		switch row.Category {
+		case "Visual":
+			totals.Visual = row.Total
+		case "Hearing":
+			totals.Hearing = row.Total
+		case "Physical":
+			totals.Physical = row.Total
+		case "Intellectual":
+			totals.Intellectual = row.Total
+		case "Psychosocial":
+			totals.Psychosocial = row.Total
+		}
+	}
+
+	return totals, utils.Error{}
+}
+
+func (n *personDisabilityRepo) CountDisabilityByNeighborhood(neighborhood string) (model.DisabilityTotalsByNeighborhood, utils.Error) {
+	var result []struct {
+		Category string
+		Total    int
+	}
+
+	query := `
+		SELECT d.category, COUNT(*) AS total
+		FROM person_disabilities pd
+		JOIN disabilities d ON pd.disability_id = d.id
+		JOIN people p ON pd.person_id = p.id
+		JOIN addresses a ON p.address_id = a.id
+		WHERE a.neighborhood = ?
+		GROUP BY d.category;
+	`
+
+	if err := n.db.Raw(query, neighborhood).Scan(&result).Error; err != nil {
+		return model.DisabilityTotalsByNeighborhood{}, personDisabilityRepoError("failed to count the disabilities by neighborhood", "06")
+	}
+
+	totals := model.DisabilityTotalsByNeighborhood{}
+	for _, row := range result {
+		switch row.Category {
+		case "Visual":
+			totals.Visual = row.Total
+		case "Hearing":
+			totals.Hearing = row.Total
+		case "Physical":
+			totals.Physical = row.Total
+		case "Intellectual":
+			totals.Intellectual = row.Total
+		case "Psychosocial":
+			totals.Psychosocial = row.Total
+		}
+	}
+
+	return totals, utils.Error{}
 }

@@ -67,4 +67,5 @@ const (
 	NewsErrorType       ErrorEntity = 6
 	ConfigErrorType     ErrorEntity = 7
 	ActivityErrorType   ErrorEntity = 8
+	ReportsErrorType    ErrorEntity = 9
 )

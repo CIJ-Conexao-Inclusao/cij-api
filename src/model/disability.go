@@ -7,16 +7,16 @@ import (
 type Disability struct {
 	*gorm.Model
 	Id          int    `gorm:"type:int;primaryKey;autoIncrement;not null" json:"id"`
-	Category    string `gorm:"type:varchar(200);not null" json:"category"`
-	Description string `gorm:"type:varchar(200);not null" json:"description"`
-	Rate        string `gorm:"type:varchar(200);not null" json:"rate"`
+	Category    string `gorm:"type:varchar(200);not null;index" json:"category"`
+	Description string `gorm:"type:varchar(200);not null;index" json:"description"`
+	Rate        int    `gorm:"type:int;not null" json:"rate"`
 	People      []PersonDisability
 }
 
 type DisabilityRequest struct {
 	Category    string `json:"category"`
 	Description string `json:"description"`
-	Rate        string `json:"rate"`
+	Rate        int    `json:"rate"`
 }
 
 type PersonDisabilityRequest struct {
@@ -28,7 +28,7 @@ type DisabilityResponse struct {
 	Id          int    `json:"id"`
 	Category    string `json:"category"`
 	Description string `json:"description"`
-	Rate        string `json:"rate"`
+	Rate        int    `json:"rate"`
 	Acquired    bool   `json:"acquired"`
 }
 
