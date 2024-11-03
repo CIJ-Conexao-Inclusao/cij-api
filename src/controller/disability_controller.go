@@ -21,6 +21,15 @@ func NewDisabilityController(disabilityService service.DisabilityService) *Disab
 	}
 }
 
+// @Summary Create Disabilities
+// @Description Create new disabilities
+// @Tags disabilities
+// @Accept json
+// @Produce json
+// @Param disabilities body DisabilityPostParameters true "List of disabilities"
+// @Success 201 {object} model.Response
+// @Failure 400 {object} model.Response
+// @Router /disabilities [post]
 func (c *DisabilityController) CreateDisability(ctx *fiber.Ctx) error {
 	var disabilityRequest DisabilityPostParameters
 	var response model.Response

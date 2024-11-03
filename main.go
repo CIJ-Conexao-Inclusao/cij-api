@@ -27,6 +27,22 @@ func main() {
 
 	db := database.ConnectionDB(&loadConfig)
 
+	if err := db.Migrator().DropTable(
+		&model.User{},
+		&model.Address{},
+		&model.Person{},
+		&model.Disability{},
+		&model.PersonDisability{},
+		&model.Company{},
+		&model.News{},
+		&model.Role{},
+		&model.Activity{},
+	); err != nil {
+		log.Fatal("failed to drop tables", err)
+	}
+
+	log.Default().Print("Tables dropped")
+
 	migrateDb(db)
 
 	startServer(db)

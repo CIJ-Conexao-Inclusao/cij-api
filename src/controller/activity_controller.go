@@ -19,6 +19,16 @@ func NewActivityController(activityService service.ActivityService) ActivityCont
 	}
 }
 
+// @Summary Create a new activity
+// @Description Create a new activity with the provided details
+// @Tags activities
+// @Accept json
+// @Produce json
+// @Param activity body model.ActivityRequest true "Activity Request"
+// @Success 201 {object} model.Response
+// @Failure 400 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /activities [post]
 func (a *ActivityController) CreateActivity(ctx *fiber.Ctx) error {
 	var activityRequest model.ActivityRequest
 	var response model.Response
@@ -49,6 +59,18 @@ func (a *ActivityController) CreateActivity(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusCreated).JSON(response)
 }
 
+// @Summary Get activities by type and period
+// @Description Retrieve activities filtered by type and date range
+// @Tags activities
+// @Accept json
+// @Produce json
+// @Param type query string true "Activity Type"
+// @Param start_date query string true "Start Date"
+// @Param end_date query string true "End Date"
+// @Success 200 {object} model.Response
+// @Failure 400 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /activities [get]
 func (a *ActivityController) GetActivitiesByTypeAndPeriod(ctx *fiber.Ctx) error {
 	activityType := ctx.Query("type")
 	startDate := ctx.Query("start_date")

@@ -26,6 +26,14 @@ func reportsControllerError(message string, code string) utils.Error {
 	return utils.NewError(message, errorCode)
 }
 
+// @Summary Get Disability Totals
+// @Description Get total counts of disabilities
+// @Tags reports
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /reports/disability-totals [get]
 func (c *ReportsController) GetDisabilityTotals(ctx *fiber.Ctx) error {
 	var response model.Response
 
@@ -47,6 +55,16 @@ func (c *ReportsController) GetDisabilityTotals(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(response)
 }
 
+// @Summary Get Disability Totals By Neighborhood
+// @Description Get total counts of disabilities by neighborhood
+// @Tags reports
+// @Accept json
+// @Produce json
+// @Param neighborhood path string true "Neighborhood"
+// @Success 200 {object} model.Response
+// @Failure 400 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /reports/disability-totals/{neighborhood} [get]
 func (c *ReportsController) GetDisabilityTotalsByNeighborhood(ctx *fiber.Ctx) error {
 	var response model.Response
 	encodedNeighborhood := ctx.Params("neighborhood")

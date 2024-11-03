@@ -18,6 +18,108 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/activities": {
+            "get": {
+                "description": "Retrieve activities filtered by type and date range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "activities"
+                ],
+                "summary": "Get activities by type and period",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Activity Type",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start Date",
+                        "name": "start_date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date",
+                        "name": "end_date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new activity with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "activities"
+                ],
+                "summary": "Create a new activity",
+                "parameters": [
+                    {
+                        "description": "Activity Request",
+                        "name": "activity",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ActivityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/companies": {
             "get": {
                 "description": "list all registered companies and their users.",
@@ -253,6 +355,46 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/disabilities": {
+            "post": {
+                "description": "Create new disabilities",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "disabilities"
+                ],
+                "summary": "Create Disabilities",
+                "parameters": [
+                    {
+                        "description": "List of disabilities",
+                        "name": "disabilities",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.DisabilityPostParameters"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -810,6 +952,79 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/reports/disability-totals": {
+            "get": {
+                "description": "Get total counts of disabilities",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Get Disability Totals",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/disability-totals/{neighborhood}": {
+            "get": {
+                "description": "Get total counts of disabilities by neighborhood",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Get Disability Totals By Neighborhood",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Neighborhood",
+                        "name": "neighborhood",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -818,6 +1033,17 @@ const docTemplate = `{
             "properties": {
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.DisabilityPostParameters": {
+            "type": "object",
+            "properties": {
+                "disabilities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DisabilityRequest"
+                    }
                 }
             }
         },
@@ -869,6 +1095,20 @@ const docTemplate = `{
                 "Dark",
                 "System"
             ]
+        },
+        "model.ActivityRequest": {
+            "type": "object",
+            "properties": {
+                "actor": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
         },
         "model.AddressRequest": {
             "type": "object",
@@ -1011,10 +1251,13 @@ const docTemplate = `{
         "model.DisabilityRequest": {
             "type": "object",
             "properties": {
-                "acquired": {
-                    "type": "boolean"
+                "category": {
+                    "type": "string"
                 },
-                "id": {
+                "description": {
+                    "type": "string"
+                },
+                "rate": {
                     "type": "integer"
                 }
             }
@@ -1071,6 +1314,17 @@ const docTemplate = `{
                 }
             }
         },
+        "model.PersonDisabilityRequest": {
+            "type": "object",
+            "properties": {
+                "acquired": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.PersonDisabilityResponse": {
             "type": "object",
             "properties": {
@@ -1087,7 +1341,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "rate": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -1103,7 +1357,7 @@ const docTemplate = `{
                 "disabilities": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.DisabilityRequest"
+                        "$ref": "#/definitions/model.PersonDisabilityRequest"
                     }
                 },
                 "gender": {
