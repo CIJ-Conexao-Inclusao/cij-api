@@ -61,6 +61,8 @@ func migrateDb(db *gorm.DB) {
 
 	createDefaultRoles(db)
 	createDefaultDisabilities(db)
+	createUsers(db)
+	createPeople(db)
 }
 
 func createDefaultRoles(db *gorm.DB) {
@@ -94,6 +96,48 @@ func createDefaultDisabilities(db *gorm.DB) error {
 		if err := db.Where("category = ? AND description = ?", disability.Category, disability.Description).First(&existing).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				if err := db.Create(&disability).Error; err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func createPeople(db *gorm.DB) error {
+	people := []model.Person{
+		{Name: "Kenzo", Cpf: "12312312321", Phone: "5547996446679", Gender: "male", UserId: 1},
+	}
+
+	for _, person := range people {
+		var existing model.Person
+		if err := db.Where("cpf = ?", person.Cpf).First(&existing).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				if err := db.Create(&person).Error; err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func createUsers(db *gorm.DB) error {
+	users := []model.User{
+		{Email: "kenzo@gmail.com", Password: "$2a$10$7QdLcHhhTJ/3d.08f3xxz.MZZk695RmNJoIgjfp.sn96FlWz6.JLS", RoleId: 3},
+	}
+
+	for _, user := range users {
+		var existing model.User
+		if err := db.Where("email = ?", user.Email).First(&existing).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				if err := db.Create(&user).Error; err != nil {
 					return err
 				}
 			} else {
