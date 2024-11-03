@@ -943,7 +943,7 @@ paths:
       summary: Update a person disabilities.
       tags:
       - People
-  /reports/disability-totals:
+  /reports/disabilities:
     get:
       consumes:
       - application/json
@@ -962,7 +962,7 @@ paths:
       summary: Get Disability Totals
       tags:
       - reports
-  /reports/disability-totals/{neighborhood}:
+  /reports/disabilities/{neighborhood}:
     get:
       consumes:
       - application/json

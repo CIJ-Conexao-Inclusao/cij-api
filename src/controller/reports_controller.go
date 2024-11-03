@@ -33,7 +33,7 @@ func reportsControllerError(message string, code string) utils.Error {
 // @Produce json
 // @Success 200 {object} model.Response
 // @Failure 500 {object} model.Response
-// @Router /reports/disability-totals [get]
+// @Router /reports/disabilities [get]
 func (c *ReportsController) GetDisabilityTotals(ctx *fiber.Ctx) error {
 	var response model.Response
 
@@ -64,7 +64,7 @@ func (c *ReportsController) GetDisabilityTotals(ctx *fiber.Ctx) error {
 // @Success 200 {object} model.Response
 // @Failure 400 {object} model.Response
 // @Failure 500 {object} model.Response
-// @Router /reports/disability-totals/{neighborhood} [get]
+// @Router /reports/disabilities/{neighborhood} [get]
 func (c *ReportsController) GetDisabilityTotalsByNeighborhood(ctx *fiber.Ctx) error {
 	var response model.Response
 	encodedNeighborhood := ctx.Params("neighborhood")

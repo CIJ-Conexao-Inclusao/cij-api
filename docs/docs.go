@@ -953,7 +953,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/reports/disability-totals": {
+        "/reports/disabilities": {
             "get": {
                 "description": "Get total counts of disabilities",
                 "consumes": [
@@ -982,7 +982,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/reports/disability-totals/{neighborhood}": {
+        "/reports/disabilities/{neighborhood}": {
             "get": {
                 "description": "Get total counts of disabilities by neighborhood",
                 "consumes": [
