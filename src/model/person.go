@@ -15,6 +15,7 @@ type Person struct {
 	Gender       enum.GenderEnum `gorm:"type:char(6);not null" json:"gender"`
 	UserId       int             `gorm:"type:int;not null;unique" json:"user_id"`
 	AddressId    *int            `gorm:"type:int;unique" json:"address_id"`
+	Curriculum   string          `gorm:"type:varchar(255)" json:"curriculum"`
 	Address      *Address
 	User         *User
 	Disabilities []PersonDisability
@@ -36,6 +37,7 @@ type PersonResponse struct {
 	Cpf          string                      `json:"cpf"`
 	Phone        string                      `json:"phone"`
 	Gender       enum.GenderEnum             `json:"gender"`
+	Curriculum   string                      `json:"curriculum,omitempty"`
 	User         UserResponse                `json:"user"`
 	Address      *AddressResponse            `json:"address,omitempty"`
 	Disabilities *[]PersonDisabilityResponse `json:"disabilities,omitempty"`
@@ -43,12 +45,13 @@ type PersonResponse struct {
 
 func (p *Person) ToResponse(user User) PersonResponse {
 	return PersonResponse{
-		Id:     p.Id,
-		Name:   p.Name,
-		Cpf:    p.Cpf,
-		Phone:  p.Phone,
-		Gender: p.Gender,
-		User:   user.ToResponse(),
+		Id:         p.Id,
+		Name:       p.Name,
+		Cpf:        p.Cpf,
+		Phone:      p.Phone,
+		Gender:     p.Gender,
+		Curriculum: p.Curriculum,
+		User:       user.ToResponse(),
 	}
 }
 
