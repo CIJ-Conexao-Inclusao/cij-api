@@ -522,16 +522,7 @@ func (n *PersonController) UploadCurriculum(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(response)
 	}
 
-	fileContent, err := file.Open()
-	if err != nil {
-		response = model.Response{
-			Message: err.Error(),
-		}
-
-		return ctx.Status(http.StatusInternalServerError).JSON(response)
-	}
-
-	if err := n.personService.UploadCurriculum(fileContent, idInt); err.Code != "" {
+	if err := n.personService.UploadCurriculum(*file, idInt); err.Code != "" {
 		response = model.Response{
 			Message: err.Error(),
 			Code:    err.GetCode(),

@@ -23,7 +23,7 @@ type PersonService interface {
 	UpdatePersonDisabilities(disabilities []model.PersonDisabilityRequest, personId int, tx *gorm.DB) utils.Error
 	DeletePerson(personId int) utils.Error
 
-	UploadCurriculum(curriculum multipart.File, personId int) utils.Error
+	UploadCurriculum(curriculum multipart.FileHeader, personId int) utils.Error
 }
 
 type personService struct {
@@ -314,14 +314,21 @@ func (n *personService) DeletePerson(personId int) utils.Error {
 	return utils.Error{}
 }
 
-func (n *personService) UploadCurriculum(curriculum multipart.File, personId int) utils.Error {
+func (n *personService) UploadCurriculum(curriculum multipart.FileHeader, personId int) utils.Error {
 	person, err := n.personRepo.GetPersonById(personId, nil)
 	if err.Code != "" {
 		return err
 	}
 
+	openCurriculum, fileError := curriculum.Open()
+	if fileError != nil {
+		return personServiceError("failed to open the file", "03")
+	}
+
+	defer openCurriculum.Close()
+
 	filesService := NewFilesService()
-	url, uploadError := filesService.UploadFile(curriculum, "cij/curriculum/"+person.Cpf)
+	url, uploadError := filesService.UploadFile(openCurriculum, "cij/curriculum/"+person.Cpf)
 	if uploadError != nil {
 		return personServiceError("failed to upload the file", "04")
 	}
