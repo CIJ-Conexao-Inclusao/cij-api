@@ -17,6 +17,7 @@ type PersonRepo interface {
 	GetPersonByCpf(cpf string) (model.Person, utils.Error)
 	UpdatePerson(person model.Person, personId int, tx *gorm.DB) utils.Error
 	DeletePerson(personId int) utils.Error
+	UploadCurriculum(personId int, fileUrl string) utils.Error
 }
 
 type personRepo struct {
@@ -120,6 +121,14 @@ func (n *personRepo) UpdatePerson(person model.Person, personId int, tx *gorm.DB
 func (n *personRepo) DeletePerson(personId int) utils.Error {
 	if err := n.db.Model(model.Person{}).Where("id = ?", personId).Unscoped().Delete(&model.Person{}).Error; err != nil {
 		return personRepoError("failed to delete the person", "07")
+	}
+
+	return utils.Error{}
+}
+
+func (n *personRepo) UploadCurriculum(personId int, fileUrl string) utils.Error {
+	if err := n.db.Model(model.Person{}).Where("id = ?", personId).Update("curriculum", fileUrl).Error; err != nil {
+		return personRepoError("failed to upload the curriculum", "08")
 	}
 
 	return utils.Error{}

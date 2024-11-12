@@ -5,6 +5,7 @@ import (
 	"cij_api/src/repo"
 	"cij_api/src/utils"
 	"fmt"
+	"mime/multipart"
 
 	"gorm.io/gorm"
 )
@@ -21,6 +22,8 @@ type PersonService interface {
 	UpdatePersonAddress(address model.AddressRequest, personId int, tx *gorm.DB) utils.Error
 	UpdatePersonDisabilities(disabilities []model.PersonDisabilityRequest, personId int, tx *gorm.DB) utils.Error
 	DeletePerson(personId int) utils.Error
+
+	UploadCurriculum(curriculum multipart.File, personId int) utils.Error
 }
 
 type personService struct {
@@ -304,6 +307,26 @@ func (n *personService) DeletePerson(personId int) utils.Error {
 	}
 
 	err = n.addressRepo.DeleteAddress(*person.AddressId)
+	if err.Code != "" {
+		return err
+	}
+
+	return utils.Error{}
+}
+
+func (n *personService) UploadCurriculum(curriculum multipart.File, personId int) utils.Error {
+	person, err := n.personRepo.GetPersonById(personId, nil)
+	if err.Code != "" {
+		return err
+	}
+
+	filesService := NewFilesService()
+	url, uploadError := filesService.UploadFile(curriculum, "cij/curriculum/"+person.Cpf)
+	if uploadError != nil {
+		return personServiceError("failed to upload the file", "04")
+	}
+
+	err = n.personRepo.UploadCurriculum(personId, url)
 	if err.Code != "" {
 		return err
 	}

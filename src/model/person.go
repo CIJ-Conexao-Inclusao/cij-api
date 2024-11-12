@@ -15,6 +15,7 @@ type Person struct {
 	Gender       enum.GenderEnum `gorm:"type:char(6);not null" json:"gender"`
 	UserId       int             `gorm:"type:int;not null;unique" json:"user_id"`
 	AddressId    *int            `gorm:"type:int;unique" json:"address_id"`
+	Curriculum   string          `gorm:"type:varchar(255)" json:"curriculum"`
 	Address      *Address
 	User         *User
 	Disabilities []PersonDisability
