@@ -482,6 +482,18 @@ func (n *PersonController) DeletePerson(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(response)
 }
 
+// UploadCurriculum
+// @Summary Upload a person curriculum.
+// @Description upload a curriculum for a person.
+// @Tags People
+// @Accept multipart/form-data
+// @Produce json
+// @Param id path string true "Person ID"
+// @Param file formData file true "Curriculum"
+// @Success 200 {object} model.Response
+// @Failure 400 {object} utils.Error
+// @Failure 500 {object} model.Response
+// @Router /people/:id/curriculum [post]
 func (n *PersonController) UploadCurriculum(ctx *fiber.Ctx) error {
 	var response model.Response
 
