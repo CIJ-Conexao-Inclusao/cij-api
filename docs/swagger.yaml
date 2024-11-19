@@ -42,6 +42,15 @@ definitions:
     - Light
     - Dark
     - System
+  model.ActivityRequest:
+    properties:
+      actor:
+        type: string
+      description:
+        type: string
+      type:
+        type: string
+    type: object
   model.AddressRequest:
     properties:
       city:
@@ -134,9 +143,11 @@ definitions:
     type: object
   model.DisabilityRequest:
     properties:
-      acquired:
-        type: boolean
-      id:
+      category:
+        type: string
+      description:
+        type: string
+      rate:
         type: integer
     type: object
   model.Field:
@@ -173,6 +184,13 @@ definitions:
       title:
         type: string
     type: object
+  model.PersonDisabilityRequest:
+    properties:
+      acquired:
+        type: boolean
+      id:
+        type: integer
+    type: object
   model.PersonDisabilityResponse:
     properties:
       acquired:
@@ -184,7 +202,7 @@ definitions:
       id:
         type: integer
       rate:
-        type: string
+        type: integer
     type: object
   model.PersonRequest:
     properties:
@@ -194,7 +212,7 @@ definitions:
         type: string
       disabilities:
         items:
-          $ref: '#/definitions/model.DisabilityRequest'
+          $ref: '#/definitions/model.PersonDisabilityRequest'
         type: array
       gender:
         $ref: '#/definitions/enum.GenderEnum'
@@ -210,6 +228,8 @@ definitions:
       address:
         $ref: '#/definitions/model.AddressResponse'
       cpf:
+        type: string
+      curriculum:
         type: string
       disabilities:
         items:
@@ -300,6 +320,84 @@ info:
   title: CIJ Project API
   version: "1.0"
 paths:
+  /activities:
+    get:
+      consumes:
+      - application/json
+      description: Get activities by type and period
+      parameters:
+      - description: Type
+        in: query
+        name: type
+        required: true
+        type: string
+      - description: Start date
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: End date
+        in: query
+        name: end_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get activities by type and period
+      tags:
+      - Activities
+    post:
+      consumes:
+      - application/json
+      description: Create activity
+      parameters:
+      - description: Activity
+        in: body
+        name: activity
+        required: true
+        schema:
+          $ref: '#/definitions/model.ActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Create activity
+      tags:
+      - Activities
+  /activities/{type}/{period}:
+    get:
+      consumes:
+      - application/json
+      description: Count activities by period
+      parameters:
+      - description: Type
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: Period
+        in: path
+        name: period
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Count activities by period
+      tags:
+      - Reports
   /companies:
     get:
       consumes:
@@ -461,6 +559,42 @@ paths:
       summary: Get user config
       tags:
       - config
+  /disabilities:
+    get:
+      consumes:
+      - application/json
+      description: Get disability totals
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get disability totals
+      tags:
+      - Reports
+  /disabilities/{neighborhood}:
+    get:
+      consumes:
+      - application/json
+      description: Get disability totals by neighborhood
+      parameters:
+      - description: Neighborhood
+        in: path
+        name: neighborhood
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get disability totals by neighborhood
+      tags:
+      - Reports
   /get-user-data:
     post:
       consumes:
@@ -785,6 +919,40 @@ paths:
           schema:
             $ref: '#/definitions/controller.MessageResponse'
       summary: Update a person address.
+      tags:
+      - People
+  /people/:id/curriculum:
+    post:
+      consumes:
+      - multipart/form-data
+      description: upload a curriculum for a person.
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Curriculum
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Upload a person curriculum.
       tags:
       - People
   /people/:id/disabilities:

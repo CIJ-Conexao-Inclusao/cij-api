@@ -9,3 +9,8 @@ type DisabilityTotals struct {
 }
 
 type DisabilityTotalsByNeighborhood = DisabilityTotals
+
+type CountActivitiesByPeriod struct {
+	ActivityType string         `json:"activityType"`
+	MonthsCount  map[string]int `json:"monthsCount"`
+}
