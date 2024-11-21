@@ -20,7 +20,7 @@ const docTemplate = `{
     "paths": {
         "/activities": {
             "get": {
-                "description": "Retrieve activities filtered by type and date range",
+                "description": "Get activities by type and period",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,27 +28,27 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "activities"
+                    "Activities"
                 ],
                 "summary": "Get activities by type and period",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Activity Type",
+                        "description": "Type",
                         "name": "type",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Start Date",
+                        "description": "Start date",
                         "name": "start_date",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "End Date",
+                        "description": "End date",
                         "name": "end_date",
                         "in": "query",
                         "required": true
@@ -60,23 +60,11 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
                     }
                 }
             },
             "post": {
-                "description": "Create a new activity with the provided details",
+                "description": "Create activity",
                 "consumes": [
                     "application/json"
                 ],
@@ -84,12 +72,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "activities"
+                    "Activities"
                 ],
-                "summary": "Create a new activity",
+                "summary": "Create activity",
                 "parameters": [
                     {
-                        "description": "Activity Request",
+                        "description": "Activity",
                         "name": "activity",
                         "in": "body",
                         "required": true,
@@ -104,15 +92,42 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
+                    }
+                }
+            }
+        },
+        "/activities/{type}/{period}": {
+            "get": {
+                "description": "Count activities by period",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Count activities by period",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Type",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
+                    {
+                        "type": "string",
+                        "description": "Period",
+                        "name": "period",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -363,8 +378,8 @@ const docTemplate = `{
             }
         },
         "/disabilities": {
-            "post": {
-                "description": "Create new disabilities",
+            "get": {
+                "description": "Get disability totals",
                 "consumes": [
                     "application/json"
                 ],
@@ -372,29 +387,44 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "disabilities"
+                    "Reports"
                 ],
-                "summary": "Create Disabilities",
-                "parameters": [
-                    {
-                        "description": "List of disabilities",
-                        "name": "disabilities",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.DisabilityPostParameters"
-                        }
-                    }
-                ],
+                "summary": "Get disability totals",
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
+                    }
+                }
+            }
+        },
+        "/disabilities/{neighborhood}": {
+            "get": {
+                "description": "Get disability totals by neighborhood",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get disability totals by neighborhood",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Neighborhood",
+                        "name": "neighborhood",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -897,6 +927,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/people/:id/curriculum": {
+            "post": {
+                "description": "upload a curriculum for a person.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "People"
+                ],
+                "summary": "Upload a person curriculum.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Person ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Curriculum",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/people/:id/disabilities": {
             "put": {
                 "description": "update an existent person disabilities.",
@@ -1381,6 +1462,9 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.AddressResponse"
                 },
                 "cpf": {
+                    "type": "string"
+                },
+                "curriculum": {
                     "type": "string"
                 },
                 "disabilities": {

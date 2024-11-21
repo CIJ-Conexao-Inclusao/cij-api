@@ -482,6 +482,74 @@ func (n *PersonController) DeletePerson(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(response)
 }
 
+// UploadCurriculum
+// @Summary Upload a person curriculum.
+// @Description upload a curriculum for a person.
+// @Tags People
+// @Accept multipart/form-data
+// @Produce json
+// @Param id path string true "Person ID"
+// @Param file formData file true "Curriculum"
+// @Success 200 {object} model.Response
+// @Failure 400 {object} utils.Error
+// @Failure 500 {object} model.Response
+// @Router /people/:id/curriculum [post]
+func (n *PersonController) UploadCurriculum(ctx *fiber.Ctx) error {
+	var response model.Response
+
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		response = model.Response{
+			Message: err.Error(),
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	personId := ctx.Params("id")
+
+	idInt, err := strconv.Atoi(personId)
+	if err != nil {
+		response = model.Response{
+			Message: err.Error(),
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	person, errPerson := n.personService.GetPersonById(idInt)
+	if errPerson.Code != "" {
+		response = model.Response{
+			Message: errPerson.Error(),
+		}
+
+		return ctx.Status(http.StatusInternalServerError).JSON(response)
+	}
+
+	if person.Id == 0 {
+		response = model.Response{
+			Message: "person not found",
+		}
+
+		return ctx.Status(http.StatusNotFound).JSON(response)
+	}
+
+	if err := n.personService.UploadCurriculum(*file, idInt); err.Code != "" {
+		response = model.Response{
+			Message: err.Error(),
+			Code:    err.GetCode(),
+		}
+
+		return ctx.Status(http.StatusInternalServerError).JSON(response)
+	}
+
+	response = model.Response{
+		Message: "success",
+	}
+
+	return ctx.Status(http.StatusOK).JSON(response)
+}
+
 func validatePersonRequiredFields(personRequest model.PersonRequest) utils.Error {
 	fieldsWithErrors := []model.Field{}
 

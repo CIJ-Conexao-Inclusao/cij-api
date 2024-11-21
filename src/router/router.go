@@ -50,7 +50,7 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	activityService := service.NewActivityService(activityRepo)
 	activityController := controller.NewActivityController(activityService)
 
-	reportsService := service.NewReportsService(personDisabilityRepo)
+	reportsService := service.NewReportsService(personDisabilityRepo, activityRepo)
 	reportsController := controller.NewReportsController(reportsService)
 
 	router.Get("/health", HealthCheck)
@@ -71,6 +71,7 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 		api.Put("/:id/address", personController.UpdatePersonAddress)
 		api.Put("/:id/disabilities", personController.UpdatePersonDisabilities)
 		api.Delete("/:id", personController.DeletePerson)
+		api.Post("/:id/curriculum", personController.UploadCurriculum)
 	}
 
 	api = router.Group("/companies")
@@ -111,6 +112,7 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	{
 		api.Get("/disabilities", reportsController.GetDisabilityTotals)
 		api.Get("/disabilities/:neighborhood", reportsController.GetDisabilityTotalsByNeighborhood)
+		api.Get("/activities/:type/:period", reportsController.CountActivitiesByPeriod)
 	}
 
 	basePath := getBasePath()

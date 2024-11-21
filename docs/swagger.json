@@ -1,1504 +1,1588 @@
 {
-    "swagger": "2.0",
-    "info": {
-        "description": "This is the API for the CIJ project",
-        "title": "CIJ Project API",
-        "contact": {
-            "name": "API Support",
-            "email": "cauakathdev@gmail.com"
-        },
-        "version": "1.0"
+  "swagger": "2.0",
+  "info": {
+    "description": "This is the API for the CIJ project",
+    "title": "CIJ Project API",
+    "contact": {
+      "name": "API Support",
+      "email": "cauakathdev@gmail.com"
     },
-    "host": "conexao-inclusao.com",
-    "basePath": "/",
-    "paths": {
-        "/activities": {
-            "get": {
-                "description": "Retrieve activities filtered by type and date range",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "activities"
-                ],
-                "summary": "Get activities by type and period",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Activity Type",
-                        "name": "type",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Start Date",
-                        "name": "start_date",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "End Date",
-                        "name": "end_date",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new activity with the provided details",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "activities"
-                ],
-                "summary": "Create a new activity",
-                "parameters": [
-                    {
-                        "description": "Activity Request",
-                        "name": "activity",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.ActivityRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
+    "version": "1.0"
+  },
+  "host": "conexao-inclusao.com",
+  "basePath": "/",
+  "paths": {
+    "/activities": {
+      "get": {
+        "description": "Get activities by type and period",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Activities"
+        ],
+        "summary": "Get activities by type and period",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Type",
+            "name": "type",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Start date",
+            "name": "start_date",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "End date",
+            "name": "end_date",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
             }
-        },
-        "/companies": {
-            "get": {
-                "description": "list all registered companies and their users.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Companies"
-                ],
-                "summary": "List all registered companies.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.CompanyResponse"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "create a new company and their user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Companies"
-                ],
-                "summary": "Create a new company.",
-                "parameters": [
-                    {
-                        "description": "Company",
-                        "name": "company",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.CompanyRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/companies/:id": {
-            "put": {
-                "description": "update an existent company and their user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Companies"
-                ],
-                "summary": "Update a company.",
-                "parameters": [
-                    {
-                        "description": "Company",
-                        "name": "company",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.CompanyRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Company ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "delete an existent company and their user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Companies"
-                ],
-                "summary": "Delete a company.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Company ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/config/{email}": {
-            "get": {
-                "description": "Get user config",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get user config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User email",
-                        "name": "email",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Config"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/disabilities": {
-            "post": {
-                "description": "Create new disabilities",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "disabilities"
-                ],
-                "summary": "Create Disabilities",
-                "parameters": [
-                    {
-                        "description": "List of disabilities",
-                        "name": "disabilities",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.DisabilityPostParameters"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/get-user-data": {
-            "post": {
-                "description": "get user information by token.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Get user information.",
-                "parameters": [
-                    {
-                        "description": "Token",
-                        "name": "token",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.TokenRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.LoginResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/health": {
-            "get": {
-                "description": "get the status of server.",
-                "consumes": [
-                    "*/*"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Root"
-                ],
-                "summary": "Show the status of server.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/login": {
-            "post": {
-                "description": "do login and returns token.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Do login.",
-                "parameters": [
-                    {
-                        "description": "Credentials",
-                        "name": "credentials",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Credentials"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.LoginResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/news": {
-            "get": {
-                "description": "list all registered news.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "News"
-                ],
-                "summary": "List all registered news.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.NewsResponse"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "create a new news.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "News"
-                ],
-                "summary": "Create a new news.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "author",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "name": "date",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "name": "description",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "name": "title",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "file",
-                        "description": "banner",
-                        "name": "banner",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "author_image",
-                        "name": "authorImage",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/people": {
-            "get": {
-                "description": "list all registered people and their users.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "People"
-                ],
-                "summary": "List all registered people.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.PersonResponse"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "create a new person and their user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "People"
-                ],
-                "summary": "Create a new person.",
-                "parameters": [
-                    {
-                        "description": "Person",
-                        "name": "person",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.PersonRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/people/:id": {
-            "get": {
-                "description": "get a person by their ID.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "People"
-                ],
-                "summary": "Get a person by ID.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Person ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.PersonResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "update an existent person and their user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "People"
-                ],
-                "summary": "Update a person.",
-                "parameters": [
-                    {
-                        "description": "Person",
-                        "name": "person",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.PersonRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Person ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "delete an existent person and their user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "People"
-                ],
-                "summary": "Delete a person.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Person ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/people/:id/address": {
-            "put": {
-                "description": "update an existent person address.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "People"
-                ],
-                "summary": "Update a person address.",
-                "parameters": [
-                    {
-                        "description": "Address",
-                        "name": "address",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.AddressRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Person ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/people/:id/disabilities": {
-            "put": {
-                "description": "update an existent person disabilities.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "People"
-                ],
-                "summary": "Update a person disabilities.",
-                "parameters": [
-                    {
-                        "description": "Disabilities",
-                        "name": "disabilities",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.DisabilityRequest"
-                            }
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Person ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/controller.MessageResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/reports/disabilities": {
-            "get": {
-                "description": "Get total counts of disabilities",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "reports"
-                ],
-                "summary": "Get Disability Totals",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/reports/disabilities/{neighborhood}": {
-            "get": {
-                "description": "Get total counts of disabilities by neighborhood",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "reports"
-                ],
-                "summary": "Get Disability Totals By Neighborhood",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Neighborhood",
-                        "name": "neighborhood",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
-            }
+          }
         }
+      },
+      "post": {
+        "description": "Create activity",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Activities"
+        ],
+        "summary": "Create activity",
+        "parameters": [
+          {
+            "description": "Activity",
+            "name": "activity",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/model.ActivityRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          }
+        }
+      }
     },
-    "definitions": {
-        "auth.TokenRequest": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "controller.DisabilityPostParameters": {
-            "type": "object",
-            "properties": {
-                "disabilities": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.DisabilityRequest"
-                    }
-                }
-            }
-        },
-        "controller.MessageResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "enum.ColorBlindnessEnum": {
+    "/activities/{type}/{period}": {
+      "get": {
+        "description": "Count activities by period",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Count activities by period",
+        "parameters": [
+          {
             "type": "string",
-            "enum": [
-                "normal",
-                "protanopia",
-                "deuteranopia",
-                "tritanopia"
-            ],
-            "x-enum-varnames": [
-                "Normal",
-                "Protanopia",
-                "Deuteranopia",
-                "Tritanopia"
-            ]
-        },
-        "enum.GenderEnum": {
+            "description": "Type",
+            "name": "type",
+            "in": "path",
+            "required": true
+          },
+          {
             "type": "string",
-            "enum": [
-                "male",
-                "female",
-                "other"
-            ],
-            "x-enum-varnames": [
-                "Male",
-                "Female",
-                "Other"
-            ]
-        },
-        "enum.ThemeEnum": {
-            "type": "string",
-            "enum": [
-                "light",
-                "dark",
-                "system"
-            ],
-            "x-enum-varnames": [
-                "Light",
-                "Dark",
-                "System"
-            ]
-        },
-        "model.ActivityRequest": {
-            "type": "object",
-            "properties": {
-                "actor": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
+            "description": "Period",
+            "name": "period",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
             }
-        },
-        "model.AddressRequest": {
-            "type": "object",
-            "properties": {
-                "city": {
-                    "type": "string"
-                },
-                "complement": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "neighborhood": {
-                    "type": "string"
-                },
-                "number": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "street": {
-                    "type": "string"
-                },
-                "zip_code": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.AddressResponse": {
-            "type": "object",
-            "properties": {
-                "city": {
-                    "type": "string"
-                },
-                "complement": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "neighborhood": {
-                    "type": "string"
-                },
-                "number": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "street": {
-                    "type": "string"
-                },
-                "zip_code": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.CompanyRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "$ref": "#/definitions/model.AddressRequest"
-                },
-                "cnpj": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/model.UserRequest"
-                }
-            }
-        },
-        "model.CompanyResponse": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "$ref": "#/definitions/model.AddressResponse"
-                },
-                "cnpj": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/model.UserResponse"
-                }
-            }
-        },
-        "model.Config": {
-            "type": "object",
-            "properties": {
-                "color_blindness": {
-                    "$ref": "#/definitions/enum.ColorBlindnessEnum"
-                },
-                "font_size": {
-                    "type": "integer"
-                },
-                "screen_reader": {
-                    "type": "boolean"
-                },
-                "system_colors": {
-                    "$ref": "#/definitions/model.SystemColors"
-                },
-                "theme": {
-                    "$ref": "#/definitions/enum.ThemeEnum"
-                },
-                "voice_capture": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "model.Credentials": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.DisabilityRequest": {
-            "type": "object",
-            "properties": {
-                "category": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "rate": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.Field": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.LoginResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "token": {
-                    "type": "string"
-                },
-                "user_info": {}
-            }
-        },
-        "model.NewsResponse": {
-            "type": "object",
-            "properties": {
-                "author": {
-                    "type": "string"
-                },
-                "author_image": {
-                    "type": "string"
-                },
-                "banner": {
-                    "type": "string"
-                },
-                "date": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.PersonDisabilityRequest": {
-            "type": "object",
-            "properties": {
-                "acquired": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.PersonDisabilityResponse": {
-            "type": "object",
-            "properties": {
-                "acquired": {
-                    "type": "boolean"
-                },
-                "category": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "rate": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.PersonRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "$ref": "#/definitions/model.AddressRequest"
-                },
-                "cpf": {
-                    "type": "string"
-                },
-                "disabilities": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.PersonDisabilityRequest"
-                    }
-                },
-                "gender": {
-                    "$ref": "#/definitions/enum.GenderEnum"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/model.UserRequest"
-                }
-            }
-        },
-        "model.PersonResponse": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "$ref": "#/definitions/model.AddressResponse"
-                },
-                "cpf": {
-                    "type": "string"
-                },
-                "disabilities": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.PersonDisabilityResponse"
-                    }
-                },
-                "gender": {
-                    "$ref": "#/definitions/enum.GenderEnum"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/model.UserResponse"
-                }
-            }
-        },
-        "model.Response": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "data": {},
-                "fields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Field"
-                    }
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.SystemChartColors": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "string"
-            }
-        },
-        "model.SystemColors": {
-            "type": "object",
-            "properties": {
-                "chart_colors": {
-                    "$ref": "#/definitions/model.SystemChartColors"
-                },
-                "primary_colors": {
-                    "$ref": "#/definitions/model.SystemPrimaryColors"
-                }
-            }
-        },
-        "model.SystemPrimaryColors": {
-            "type": "object",
-            "properties": {
-                "background_color": {
-                    "type": "string"
-                },
-                "font_color": {
-                    "type": "string"
-                },
-                "input_color": {
-                    "type": "string"
-                },
-                "primary_color": {
-                    "type": "string"
-                },
-                "secondary_color": {
-                    "type": "string"
-                },
-                "secondary_font_color": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.UserRequest": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.UserResponse": {
-            "type": "object",
-            "properties": {
-                "config": {
-                    "$ref": "#/definitions/model.Config"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "utils.Error": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "fields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Field"
-                    }
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
+          }
         }
+      }
+    },
+    "/companies": {
+      "get": {
+        "description": "list all registered companies and their users.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Companies"
+        ],
+        "summary": "List all registered companies.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/model.CompanyResponse"
+              }
+            }
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "create a new company and their user.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Create a new company.",
+        "parameters": [
+          {
+            "description": "Company",
+            "name": "company",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/model.CompanyRequest"
+            }
+          },
+          {
+            "type": "string",
+            "description": "Token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/companies/:id": {
+      "put": {
+        "description": "update an existent company and their user.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Update a company.",
+        "parameters": [
+          {
+            "description": "Company",
+            "name": "company",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/model.CompanyRequest"
+            }
+          },
+          {
+            "type": "string",
+            "description": "Company ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "delete an existent company and their user.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Delete a company.",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Company ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Token",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/config/{email}": {
+      "get": {
+        "description": "Get user config",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "config"
+        ],
+        "summary": "Get user config",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "User email",
+            "name": "email",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.Config"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          }
+        }
+      }
+    },
+    "/disabilities": {
+      "get": {
+        "description": "Get disability totals",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Get disability totals",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          }
+        }
+      }
+    },
+    "/disabilities/{neighborhood}": {
+      "get": {
+        "description": "Get disability totals by neighborhood",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Get disability totals by neighborhood",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Neighborhood",
+            "name": "neighborhood",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          }
+        }
+      }
+    },
+    "/get-user-data": {
+      "post": {
+        "description": "get user information by token.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Get user information.",
+        "parameters": [
+          {
+            "description": "Token",
+            "name": "token",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/auth.TokenRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.LoginResponse"
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "get the status of server.",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Root"
+        ],
+        "summary": "Show the status of server.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "description": "do login and returns token.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Do login.",
+        "parameters": [
+          {
+            "description": "Credentials",
+            "name": "credentials",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/model.Credentials"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.LoginResponse"
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/news": {
+      "get": {
+        "description": "list all registered news.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "News"
+        ],
+        "summary": "List all registered news.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/model.NewsResponse"
+              }
+            }
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "create a new news.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "News"
+        ],
+        "summary": "Create a new news.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "author",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "date",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "description",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "title",
+            "in": "formData"
+          },
+          {
+            "type": "file",
+            "description": "banner",
+            "name": "banner",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "file",
+            "description": "author_image",
+            "name": "authorImage",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/people": {
+      "get": {
+        "description": "list all registered people and their users.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "People"
+        ],
+        "summary": "List all registered people.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/model.PersonResponse"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "create a new person and their user.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "People"
+        ],
+        "summary": "Create a new person.",
+        "parameters": [
+          {
+            "description": "Person",
+            "name": "person",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/model.PersonRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/utils.Error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          }
+        }
+      }
+    },
+    "/people/:id": {
+      "get": {
+        "description": "get a person by their ID.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "People"
+        ],
+        "summary": "Get a person by ID.",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Person ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.PersonResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "update an existent person and their user.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "People"
+        ],
+        "summary": "Update a person.",
+        "parameters": [
+          {
+            "description": "Person",
+            "name": "person",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/model.PersonRequest"
+            }
+          },
+          {
+            "type": "string",
+            "description": "Person ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/utils.Error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "delete an existent person and their user.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "People"
+        ],
+        "summary": "Delete a person.",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Person ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/utils.Error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          }
+        }
+      }
+    },
+    "/people/:id/address": {
+      "put": {
+        "description": "update an existent person address.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "People"
+        ],
+        "summary": "Update a person address.",
+        "parameters": [
+          {
+            "description": "Address",
+            "name": "address",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/model.AddressRequest"
+            }
+          },
+          {
+            "type": "string",
+            "description": "Person ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/utils.Error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          }
+        }
+      }
+    },
+    "/people/:id/curriculum": {
+      "post": {
+        "description": "upload a curriculum for a person.",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "People"
+        ],
+        "summary": "Upload a person curriculum.",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Person ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "file",
+            "description": "Curriculum",
+            "name": "file",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/utils.Error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          }
+        }
+      }
+    },
+    "/people/:id/disabilities": {
+      "put": {
+        "description": "update an existent person disabilities.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "People"
+        ],
+        "summary": "Update a person disabilities.",
+        "parameters": [
+          {
+            "description": "Disabilities",
+            "name": "disabilities",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/model.DisabilityRequest"
+              }
+            }
+          },
+          {
+            "type": "string",
+            "description": "Person ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/utils.Error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/controller.MessageResponse"
+            }
+          }
+        }
+      }
+    },
+    "/reports/disabilities": {
+      "get": {
+        "description": "Get total counts of disabilities",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "reports"
+        ],
+        "summary": "Get Disability Totals",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          }
+        }
+      }
+    },
+    "/reports/disabilities/{neighborhood}": {
+      "get": {
+        "description": "Get total counts of disabilities by neighborhood",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "reports"
+        ],
+        "summary": "Get Disability Totals By Neighborhood",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Neighborhood",
+            "name": "neighborhood",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/model.Response"
+            }
+          }
+        }
+      }
     }
+  },
+  "definitions": {
+    "auth.TokenRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "controller.DisabilityPostParameters": {
+      "type": "object",
+      "properties": {
+        "disabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/model.DisabilityRequest"
+          }
+        }
+      }
+    },
+    "controller.MessageResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "enum.ColorBlindnessEnum": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "protanopia",
+        "deuteranopia",
+        "tritanopia"
+      ],
+      "x-enum-varnames": [
+        "Normal",
+        "Protanopia",
+        "Deuteranopia",
+        "Tritanopia"
+      ]
+    },
+    "enum.GenderEnum": {
+      "type": "string",
+      "enum": [
+        "male",
+        "female",
+        "other"
+      ],
+      "x-enum-varnames": [
+        "Male",
+        "Female",
+        "Other"
+      ]
+    },
+    "enum.ThemeEnum": {
+      "type": "string",
+      "enum": [
+        "light",
+        "dark",
+        "system"
+      ],
+      "x-enum-varnames": [
+        "Light",
+        "Dark",
+        "System"
+      ]
+    },
+    "model.ActivityRequest": {
+      "type": "object",
+      "properties": {
+        "actor": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "model.AddressRequest": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "complement": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "neighborhood": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "zip_code": {
+          "type": "string"
+        }
+      }
+    },
+    "model.AddressResponse": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "complement": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "neighborhood": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "zip_code": {
+          "type": "string"
+        }
+      }
+    },
+    "model.CompanyRequest": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/model.AddressRequest"
+        },
+        "cnpj": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/model.UserRequest"
+        }
+      }
+    },
+    "model.CompanyResponse": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/model.AddressResponse"
+        },
+        "cnpj": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/model.UserResponse"
+        }
+      }
+    },
+    "model.Config": {
+      "type": "object",
+      "properties": {
+        "color_blindness": {
+          "$ref": "#/definitions/enum.ColorBlindnessEnum"
+        },
+        "font_size": {
+          "type": "integer"
+        },
+        "screen_reader": {
+          "type": "boolean"
+        },
+        "system_colors": {
+          "$ref": "#/definitions/model.SystemColors"
+        },
+        "theme": {
+          "$ref": "#/definitions/enum.ThemeEnum"
+        },
+        "voice_capture": {
+          "type": "boolean"
+        }
+      }
+    },
+    "model.Credentials": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "model.DisabilityRequest": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "rate": {
+          "type": "integer"
+        }
+      }
+    },
+    "model.Field": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "model.LoginResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        },
+        "user_info": {}
+      }
+    },
+    "model.NewsResponse": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "author_image": {
+          "type": "string"
+        },
+        "banner": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "model.PersonDisabilityRequest": {
+      "type": "object",
+      "properties": {
+        "acquired": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "model.PersonDisabilityResponse": {
+      "type": "object",
+      "properties": {
+        "acquired": {
+          "type": "boolean"
+        },
+        "category": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "rate": {
+          "type": "integer"
+        }
+      }
+    },
+    "model.PersonRequest": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/model.AddressRequest"
+        },
+        "cpf": {
+          "type": "string"
+        },
+        "disabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/model.PersonDisabilityRequest"
+          }
+        },
+        "gender": {
+          "$ref": "#/definitions/enum.GenderEnum"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/model.UserRequest"
+        }
+      }
+    },
+    "model.PersonResponse": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/model.AddressResponse"
+        },
+        "cpf": {
+          "type": "string"
+        },
+        "curriculum": {
+          "type": "string"
+        },
+        "disabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/model.PersonDisabilityResponse"
+          }
+        },
+        "gender": {
+          "$ref": "#/definitions/enum.GenderEnum"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/model.UserResponse"
+        }
+      }
+    },
+    "model.Response": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "data": {},
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/model.Field"
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "model.SystemChartColors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "model.SystemColors": {
+      "type": "object",
+      "properties": {
+        "chart_colors": {
+          "$ref": "#/definitions/model.SystemChartColors"
+        },
+        "primary_colors": {
+          "$ref": "#/definitions/model.SystemPrimaryColors"
+        }
+      }
+    },
+    "model.SystemPrimaryColors": {
+      "type": "object",
+      "properties": {
+        "background_color": {
+          "type": "string"
+        },
+        "font_color": {
+          "type": "string"
+        },
+        "input_color": {
+          "type": "string"
+        },
+        "primary_color": {
+          "type": "string"
+        },
+        "secondary_color": {
+          "type": "string"
+        },
+        "secondary_font_color": {
+          "type": "string"
+        }
+      }
+    },
+    "model.UserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "model.UserResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/model.Config"
+        },
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "utils.Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/model.Field"
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }
