@@ -145,7 +145,7 @@ func (n *personDisabilityRepo) CountDisabilityByNeighborhood(neighborhood string
 		JOIN disabilities d ON pd.disability_id = d.id
 		JOIN people p ON pd.person_id = p.id
 		JOIN addresses a ON p.address_id = a.id
-		WHERE a.neighborhood = ?
+		WHERE REPLACE(LOWER(NormalizeText(a.neighborhood)), ' ', '') = REPLACE(LOWER(NormalizeText(?)), ' ', '')
 		GROUP BY d.category;
 	`
 
