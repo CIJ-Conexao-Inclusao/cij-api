@@ -5,6 +5,7 @@ import (
 	"cij_api/src/controller"
 	"cij_api/src/middleware"
 	"cij_api/src/repo"
+	vacancy "cij_api/src/repo/vacancy"
 	"cij_api/src/service"
 	"fmt"
 
@@ -49,6 +50,15 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 
 	activityService := service.NewActivityService(activityRepo)
 	activityController := controller.NewActivityController(activityService)
+
+	vacancyRepo := vacancy.NewVacancyRepo(db)
+	vacancySkillsRepo := vacancy.NewSkillsRepo(db)
+	vacancyRequirementsRepo := vacancy.NewRequirementsRepo(db)
+	vacancyResponsabilitiesRepo := vacancy.NewResponsabilitiesRepo(db)
+	vacancyDisabilitiesRepo := vacancy.NewVacancyDisabilityRepo(db)
+
+	vacancyService := service.NewVacancyService(vacancyRepo, vacancySkillsRepo, vacancyRequirementsRepo, vacancyResponsabilitiesRepo, vacancyDisabilitiesRepo)
+	vacancyController := controller.NewVacancyController(vacancyService)
 
 	reportsService := service.NewReportsService(personDisabilityRepo, activityRepo)
 	reportsController := controller.NewReportsController(reportsService)
@@ -106,6 +116,12 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 
 		api.Use(middleware.AuthAdmin)
 		api.Post("/", activityController.CreateActivity)
+	}
+
+	api = router.Group("/vacancies")
+	{
+		api.Get("/", vacancyController.ListVacancies)
+		api.Post("/", vacancyController.CreateVacancy)
 	}
 
 	api = router.Group("/reports")
