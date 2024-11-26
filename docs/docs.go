@@ -1033,6 +1033,137 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vacancies": {
+            "get": {
+                "description": "Update a vacancy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vacancies"
+                ],
+                "summary": "Update a vacancy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Per Page",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Company ID",
+                        "name": "company_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Disability",
+                        "name": "disability",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Area",
+                        "name": "area",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Contract Type",
+                        "name": "contract_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search Text",
+                        "name": "search_text",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a vacancy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vacancies"
+                ],
+                "summary": "Create a vacancy",
+                "parameters": [
+                    {
+                        "description": "Vacancy",
+                        "name": "vacancy",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.VacancyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/vacancies/{id}": {
+            "get": {
+                "description": "Get a vacancy by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vacancies"
+                ],
+                "summary": "Get a vacancy by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1091,6 +1222,30 @@ const docTemplate = `{
                 "Light",
                 "Dark",
                 "System"
+            ]
+        },
+        "enum.VacancyContractType": {
+            "type": "string",
+            "enum": [
+                "clt",
+                "pj",
+                "trainee"
+            ],
+            "x-enum-varnames": [
+                "CLT",
+                "PJ",
+                "Trainee"
+            ]
+        },
+        "enum.VacancyRequirementType": {
+            "type": "string",
+            "enum": [
+                "desirable",
+                "obligatory"
+            ],
+            "x-enum-varnames": [
+                "Desirable",
+                "Obligatory"
             ]
         },
         "model.ActivityRequest": {
@@ -1486,6 +1641,79 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.VacancyRequest": {
+            "type": "object",
+            "properties": {
+                "area": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "company_id": {
+                    "type": "integer"
+                },
+                "contract_type": {
+                    "$ref": "#/definitions/enum.VacancyContractType"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "disabilities": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "publish_date": {
+                    "type": "string"
+                },
+                "registration_date": {
+                    "type": "string"
+                },
+                "requirements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.VacancyRequirementRequest"
+                    }
+                },
+                "responsabilities": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "section": {
+                    "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "turn": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.VacancyRequirementRequest": {
+            "type": "object",
+            "properties": {
+                "requirement": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/enum.VacancyRequirementType"
                 }
             }
         },

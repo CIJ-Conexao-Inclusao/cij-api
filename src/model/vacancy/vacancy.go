@@ -119,6 +119,7 @@ func (v *Vacancy) ToResponse(
 		RegistrationDate: v.RegistrationDate,
 		Area:             v.Area,
 		ContractType:     v.ContractType,
+		Company:          v.Company.Name,
 		Disabilities:     disabilities,
 		Skills:           skillsResponse,
 		Responsabilities: responsabilitiesResponse,

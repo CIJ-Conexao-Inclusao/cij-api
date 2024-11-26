@@ -10,9 +10,7 @@ type VacancyResponsability struct {
 	Vacancy        *Vacancy
 }
 
-type VacancyResponsabilityResponse struct {
-	Responsability string `json:"responsability"`
-}
+type VacancyResponsabilityResponse string
 
 type VacancyResponsabilityRequest string
 
@@ -23,7 +21,5 @@ func (v *VacancyResponsabilityRequest) ToModel() *VacancyResponsability {
 }
 
 func (v *VacancyResponsability) ToResponse() *VacancyResponsabilityResponse {
-	return &VacancyResponsabilityResponse{
-		Responsability: v.Responsability,
-	}
+	return (*VacancyResponsabilityResponse)(&v.Responsability)
 }

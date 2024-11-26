@@ -42,6 +42,24 @@ definitions:
     - Light
     - Dark
     - System
+  enum.VacancyContractType:
+    enum:
+    - clt
+    - pj
+    - trainee
+    type: string
+    x-enum-varnames:
+    - CLT
+    - PJ
+    - Trainee
+  enum.VacancyRequirementType:
+    enum:
+    - desirable
+    - obligatory
+    type: string
+    x-enum-varnames:
+    - Desirable
+    - Obligatory
   model.ActivityRequest:
     properties:
       actor:
@@ -299,6 +317,54 @@ definitions:
         type: string
       id:
         type: integer
+    type: object
+  model.VacancyRequest:
+    properties:
+      area:
+        type: string
+      code:
+        type: string
+      company_id:
+        type: integer
+      contract_type:
+        $ref: '#/definitions/enum.VacancyContractType'
+      department:
+        type: string
+      description:
+        type: string
+      disabilities:
+        items:
+          type: integer
+        type: array
+      publish_date:
+        type: string
+      registration_date:
+        type: string
+      requirements:
+        items:
+          $ref: '#/definitions/model.VacancyRequirementRequest'
+        type: array
+      responsabilities:
+        items:
+          type: string
+        type: array
+      section:
+        type: string
+      skills:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      turn:
+        type: string
+    type: object
+  model.VacancyRequirementRequest:
+    properties:
+      requirement:
+        type: string
+      type:
+        $ref: '#/definitions/enum.VacancyRequirementType'
     type: object
   utils.Error:
     properties:
@@ -992,4 +1058,90 @@ paths:
       summary: Update a person disabilities.
       tags:
       - People
+  /vacancies:
+    get:
+      consumes:
+      - application/json
+      description: Update a vacancy
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: string
+      - description: Per Page
+        in: query
+        name: per_page
+        type: string
+      - description: Company ID
+        in: query
+        name: company_id
+        type: string
+      - description: Disability
+        in: query
+        name: disability
+        type: string
+      - description: Area
+        in: query
+        name: area
+        type: string
+      - description: Contract Type
+        in: query
+        name: contract_type
+        type: string
+      - description: Search Text
+        in: query
+        name: search_text
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Update a vacancy
+      tags:
+      - Vacancies
+    post:
+      consumes:
+      - application/json
+      description: Create a vacancy
+      parameters:
+      - description: Vacancy
+        in: body
+        name: vacancy
+        required: true
+        schema:
+          $ref: '#/definitions/model.VacancyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Create a vacancy
+      tags:
+      - Vacancies
+  /vacancies/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a vacancy by ID
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get a vacancy by ID
+      tags:
+      - Vacancies
 swagger: "2.0"

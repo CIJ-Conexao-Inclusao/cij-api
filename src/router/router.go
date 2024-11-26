@@ -121,6 +121,7 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	api = router.Group("/vacancies")
 	{
 		api.Get("/", vacancyController.ListVacancies)
+		api.Get("/:id", vacancyController.GetVacancyById)
 		api.Post("/", vacancyController.CreateVacancy)
 	}
 

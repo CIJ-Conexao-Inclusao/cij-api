@@ -10,9 +10,7 @@ type VacancySkill struct {
 	Vacancy   *Vacancy
 }
 
-type VacancySkillResponse struct {
-	Skill string `json:"skill"`
-}
+type VacancySkillResponse string
 
 type VacancySkillRequest string
 
@@ -23,7 +21,5 @@ func (v *VacancySkillRequest) ToModel() *VacancySkill {
 }
 
 func (v *VacancySkill) ToResponse() *VacancySkillResponse {
-	return &VacancySkillResponse{
-		Skill: v.Skill,
-	}
+	return (*VacancySkillResponse)(&v.Skill)
 }
