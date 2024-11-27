@@ -377,7 +377,8 @@ func (n *personService) personToResponse(personResponse *model.PersonResponse, p
 		personResponse.Disabilities = &disabilitiesResponse
 	}
 
-	userConfig := model.DefaultConfig
+	var userConfig interface{}
+	userConfig = model.DefaultConfig
 
 	if user.ConfigUrl != "" {
 		configService := NewConfigService(n.userRepo)

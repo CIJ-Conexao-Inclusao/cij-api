@@ -69,7 +69,8 @@ func (c *AuthController) Authenticate(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(response)
 	}
 
-	userConfig := model.DefaultConfig
+	var userConfig interface{}
+	userConfig = model.DefaultConfig
 
 	if user.ConfigUrl != "" {
 		userConfig, err = c.configService.GetUserConfig(user.ConfigUrl)
@@ -137,7 +138,8 @@ func (c *AuthController) GetUserData(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
 	}
 
-	userConfig := model.DefaultConfig
+	var userConfig interface{}
+	userConfig = model.DefaultConfig
 
 	if user.ConfigUrl != "" {
 		userConfig, err = c.configService.GetUserConfig(user.ConfigUrl)
