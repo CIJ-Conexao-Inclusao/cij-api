@@ -2,10 +2,10 @@ package service
 
 import (
 	"cij_api/src/enum"
-	model "cij_api/src/model/vacancy"
+	"cij_api/src/model"
+	modelVacancy "cij_api/src/model/vacancy"
 	repo "cij_api/src/repo/vacancy"
 	"cij_api/src/utils"
-	"slices"
 
 	"gorm.io/gorm"
 )
@@ -19,10 +19,10 @@ type vacancyService struct {
 }
 
 type VacancyService interface {
-	CreateVacancy(vacancy model.VacancyRequest) utils.Error
-	ListVacancies(page int, perPage int, companyId int, disabilityCategory string, area string, contractType enum.VacancyContractType, searchText string) ([]model.VacancySimpleResponse, utils.Error)
-	GetVacancyById(id int) (model.VacancyResponse, utils.Error)
-	UpdateVacancy(vacancy model.VacancyRequest, id int) utils.Error
+	CreateVacancy(vacancy modelVacancy.VacancyRequest) utils.Error
+	ListVacancies(page int, perPage int, companyId int, disabilityCategory string, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error)
+	GetVacancyById(id int) (modelVacancy.VacancyResponse, utils.Error)
+	UpdateVacancy(vacancy modelVacancy.VacancyRequest, id int) utils.Error
 	DeleteVacancy(id int) utils.Error
 }
 
@@ -48,7 +48,7 @@ func vacancyServiceError(message string, code string) utils.Error {
 	return utils.NewError(message, errorCode)
 }
 
-func (v *vacancyService) CreateVacancy(vacancy model.VacancyRequest) utils.Error {
+func (v *vacancyService) CreateVacancy(vacancy modelVacancy.VacancyRequest) utils.Error {
 	vacancyModel := vacancy.ToModel()
 
 	errTx := v.vacancyRepo.BeginTransaction(func(tx *gorm.DB) error {
@@ -88,7 +88,7 @@ func (v *vacancyService) CreateVacancy(vacancy model.VacancyRequest) utils.Error
 		}
 
 		for _, disability := range vacancy.Disabilities {
-			disabilityModel := model.VacancyDisability{
+			disabilityModel := modelVacancy.VacancyDisability{
 				VacancyId:    vacancyId,
 				DisabilityId: int(disability),
 			}
@@ -109,69 +109,61 @@ func (v *vacancyService) CreateVacancy(vacancy model.VacancyRequest) utils.Error
 	return utils.Error{}
 }
 
-func (v *vacancyService) ListVacancies(page int, perPage int, companyId int, disabilityCategory string, area string, contractType enum.VacancyContractType, searchText string) ([]model.VacancySimpleResponse, utils.Error) {
-	var vacanciesResponse []model.VacancySimpleResponse
+func (v *vacancyService) ListVacancies(page int, perPage int, companyId int, disabilityCategory string, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error) {
+	var vacanciesResponse []modelVacancy.VacancySimpleResponse
 
 	vacancies, err := v.vacancyRepo.ListVacancies(page, perPage, companyId, disabilityCategory, area, contractType, searchText)
 	if err.Code != "" {
-		return []model.VacancySimpleResponse{}, vacancyServiceError("failed to list the vacancies", "02")
+		return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to list the vacancies", "02")
 	}
 
 	for _, vacancy := range vacancies {
-		var uniqueDisabilities []string
+		var disabilities []model.DisabilityResponse
 
 		vacancyDisabilities, err := v.vacancyDisabilitiesRepo.GetVacancyDisabilities(vacancy.Id)
 		if err.Code != "" {
-			return []model.VacancySimpleResponse{}, vacancyServiceError("failed to get the disabilities", "03")
+			return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to get the disabilities", "03")
 		}
 
 		for _, vacancyDisability := range vacancyDisabilities {
-			if slices.Contains(uniqueDisabilities, vacancyDisability.Disability.Category) {
-				continue
-			}
-
-			uniqueDisabilities = append(uniqueDisabilities, vacancyDisability.Disability.Category)
+			disabilities = append(disabilities, vacancyDisability.Disability.ToResponse())
 		}
 
-		if disabilityCategory != "" && !slices.Contains(uniqueDisabilities, disabilityCategory) {
-			continue
-		}
-
-		vacanciesResponse = append(vacanciesResponse, vacancy.ToSimpleResponse(uniqueDisabilities))
+		vacanciesResponse = append(vacanciesResponse, vacancy.ToSimpleResponse(disabilities))
 	}
 
 	return vacanciesResponse, utils.Error{}
 }
 
-func (v *vacancyService) GetVacancyById(id int) (model.VacancyResponse, utils.Error) {
+func (v *vacancyService) GetVacancyById(id int) (modelVacancy.VacancyResponse, utils.Error) {
 	vacancy, err := v.vacancyRepo.GetVacancyById(id)
 	if err.Code != "" {
-		return model.VacancyResponse{}, vacancyServiceError("failed to get the vacancy", "03")
+		return modelVacancy.VacancyResponse{}, vacancyServiceError("failed to get the vacancy", "03")
 	}
 
 	skills, err := v.skillsRepo.ListSkillsByVacancyId(id)
 	if err.Code != "" {
-		return model.VacancyResponse{}, vacancyServiceError("failed to get the skills", "04")
+		return modelVacancy.VacancyResponse{}, vacancyServiceError("failed to get the skills", "04")
 	}
 
 	requirements, err := v.requirementsRepo.ListRequirementsByVacancyId(id)
 	if err.Code != "" {
-		return model.VacancyResponse{}, vacancyServiceError("failed to get the requirements", "05")
+		return modelVacancy.VacancyResponse{}, vacancyServiceError("failed to get the requirements", "05")
 	}
 
 	responsabilities, err := v.responsabilitiesRepo.ListResponsabilitiesByVacancyId(id)
 	if err.Code != "" {
-		return model.VacancyResponse{}, vacancyServiceError("failed to get the responsabilities", "06")
+		return modelVacancy.VacancyResponse{}, vacancyServiceError("failed to get the responsabilities", "06")
 	}
 
 	vacancyDisabilities, err := v.vacancyDisabilitiesRepo.GetVacancyDisabilities(id)
 	if err.Code != "" {
-		return model.VacancyResponse{}, vacancyServiceError("failed to get the disabilities", "07")
+		return modelVacancy.VacancyResponse{}, vacancyServiceError("failed to get the disabilities", "07")
 	}
 
-	disabilities := []string{}
+	disabilities := []model.DisabilityResponse{}
 	for _, vacancyDisability := range vacancyDisabilities {
-		disabilities = append(disabilities, vacancyDisability.Disability.Category)
+		disabilities = append(disabilities, vacancyDisability.Disability.ToResponse())
 	}
 
 	return vacancy.ToResponse(
@@ -182,7 +174,7 @@ func (v *vacancyService) GetVacancyById(id int) (model.VacancyResponse, utils.Er
 	), utils.Error{}
 }
 
-func (v *vacancyService) UpdateVacancy(vacancy model.VacancyRequest, id int) utils.Error {
+func (v *vacancyService) UpdateVacancy(vacancy modelVacancy.VacancyRequest, id int) utils.Error {
 	// vacancyModel := vacancy.ToModel()
 
 	errTx := v.vacancyRepo.BeginTransaction(func(tx *gorm.DB) error {

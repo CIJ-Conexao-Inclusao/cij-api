@@ -37,19 +37,19 @@ type VacancyResponse struct {
 	Area             string                          `json:"area"`
 	ContractType     enum.VacancyContractType        `json:"contract_type"`
 	Company          string                          `json:"company"`
-	Disabilities     []string                        `json:"disabilities"`
+	Disabilities     []model.DisabilityResponse      `json:"disabilities"`
 	Skills           []VacancySkillResponse          `json:"skills"`
 	Responsabilities []VacancyResponsabilityResponse `json:"responsabilities"`
 	Requirements     []VacancyRequirementResponse    `json:"requirements"`
 }
 
 type VacancySimpleResponse struct {
-	Code         string                   `json:"code"`
-	Title        string                   `json:"title"`
-	Area         string                   `json:"area"`
-	Company      string                   `json:"company"`
-	ContractType enum.VacancyContractType `json:"contract_type"`
-	Disabilities []string                 `json:"disabilities"`
+	Code         string                     `json:"code"`
+	Title        string                     `json:"title"`
+	Area         string                     `json:"area"`
+	Company      string                     `json:"company"`
+	ContractType enum.VacancyContractType   `json:"contract_type"`
+	Disabilities []model.DisabilityResponse `json:"disabilities"`
 }
 
 type VacancyRequest struct {
@@ -87,7 +87,7 @@ func (v *VacancyRequest) ToModel() *Vacancy {
 }
 
 func (v *Vacancy) ToResponse(
-	disabilities []string,
+	disabilities []model.DisabilityResponse,
 	skills []VacancySkill,
 	responsabilities []VacancyResponsability,
 	requirements []VacancyRequirement,
@@ -127,7 +127,7 @@ func (v *Vacancy) ToResponse(
 	}
 }
 
-func (v *Vacancy) ToSimpleResponse(disabilities []string) VacancySimpleResponse {
+func (v *Vacancy) ToSimpleResponse(disabilities []model.DisabilityResponse) VacancySimpleResponse {
 	return VacancySimpleResponse{
 		Code:         v.Code,
 		Title:        v.Title,

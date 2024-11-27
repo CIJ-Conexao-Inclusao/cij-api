@@ -11,8 +11,4 @@ type VacancyDisability struct {
 	Disability   *model.Disability
 }
 
-type VacancyDisabilityResponse struct {
-	Disability model.DisabilityResponse `json:"disability"`
-}
-
 type VacancyDisabilityRequest int
