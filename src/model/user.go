@@ -21,9 +21,9 @@ type UserRequest struct {
 }
 
 type UserResponse struct {
-	Id     int    `json:"id"`
-	Email  string `json:"email"`
-	Config Config `json:"config,omitempty"`
+	Id     int         `json:"id"`
+	Email  string      `json:"email"`
+	Config interface{} `json:"config,omitempty"`
 }
 
 func (u *User) ValidatePassword(password string) bool {

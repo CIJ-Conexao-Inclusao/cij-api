@@ -11,8 +11,8 @@ import (
 )
 
 type ConfigService interface {
-	UploadUserConfig(email string, config *model.Config) utils.Error
-	GetUserConfig(email string) (model.Config, utils.Error)
+	UploadUserConfig(email string, config *interface{}) utils.Error
+	GetUserConfig(email string) (interface{}, utils.Error)
 }
 
 type configService struct {
@@ -31,7 +31,7 @@ func configServiceError(message string, code string) utils.Error {
 	return utils.NewError(message, errorCode)
 }
 
-func (s *configService) UploadUserConfig(email string, config *model.Config) utils.Error {
+func (s *configService) UploadUserConfig(email string, config *interface{}) utils.Error {
 	userConfig, err := json.Marshal(model.DefaultConfig)
 	if err != nil {
 		return configServiceError("failed to marshall user config", "01")
@@ -75,19 +75,19 @@ func (s *configService) UploadUserConfig(email string, config *model.Config) uti
 	return utils.Error{}
 }
 
-func (s *configService) GetUserConfig(url string) (model.Config, utils.Error) {
+func (s *configService) GetUserConfig(url string) (interface{}, utils.Error) {
 	userConfig, err := http.Get(url)
 	if err != nil {
-		return model.Config{}, configServiceError("failed to get user config", "07")
+		return nil, configServiceError("failed to get user config", "07")
 	}
 
 	defer userConfig.Body.Close()
 
-	var config model.Config
+	var config interface{}
 
 	err = json.NewDecoder(userConfig.Body).Decode(&config)
 	if err != nil {
-		return model.Config{}, configServiceError("failed to decode user config", "08")
+		return nil, configServiceError("failed to decode user config", "08")
 	}
 
 	return config, utils.Error{}

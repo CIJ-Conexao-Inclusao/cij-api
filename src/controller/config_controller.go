@@ -28,12 +28,12 @@ func NewConfigController(configService service.ConfigService) *ConfigController 
 // @Accept json
 // @Produce json
 // @Param email path string true "User email"
-// @Success 200 {object} model.Config
+// @Success 200 {object} interface{}
 // @Failure 400 {object} model.Response
 // @Failure 500 {object} model.Response
 // @Router /config/{email} [get]
 func (c *ConfigController) UpdateUserConfig(ctx *fiber.Ctx) error {
-	var configRequest model.Config
+	var configRequest interface{}
 	var response model.Response
 
 	if err := ctx.BodyParser(&configRequest); err != nil {
@@ -46,17 +46,17 @@ func (c *ConfigController) UpdateUserConfig(ctx *fiber.Ctx) error {
 
 	userEmail := ctx.Params("email")
 
-	err := validateUserConfig(configRequest)
-	if err.Message != "" {
-		response = model.Response{
-			Message: err.Message,
-			Fields:  err.Fields,
-		}
+	// err := validateUserConfig(configRequest)
+	// if err.Message != "" {
+	// 	response = model.Response{
+	// 		Message: err.Message,
+	// 		Fields:  err.Fields,
+	// 	}
 
-		return ctx.Status(http.StatusBadRequest).JSON(response)
-	}
+	// 	return ctx.Status(http.StatusBadRequest).JSON(response)
+	// }
 
-	err = c.configService.UploadUserConfig(userEmail, &configRequest)
+	err := c.configService.UploadUserConfig(userEmail, &configRequest)
 	if err.Code != "" {
 		response = model.Response{
 			Message: err.Message,
