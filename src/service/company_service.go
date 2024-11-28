@@ -14,6 +14,7 @@ type CompanyService interface {
 	ListCompanies() ([]model.CompanyResponse, utils.Error)
 	GetCompanyByUserId(userId int) (model.Company, utils.Error)
 	GetCompanyByCnpj(cnpj string) (model.Company, utils.Error)
+	GetCompanyById(companyId int) (model.Company, utils.Error)
 	GetUserByEmail(email string) (model.User, utils.Error)
 	UpdateCompany(company model.CompanyRequest, companyId int) utils.Error
 	DeleteCompany(companyId int) utils.Error
@@ -157,6 +158,15 @@ func (n *companyService) GetCompanyByUserId(userId int) (model.Company, utils.Er
 
 func (n *companyService) GetCompanyByCnpj(cnpj string) (model.Company, utils.Error) {
 	company, err := n.companyRepo.GetCompanyByCnpj(cnpj)
+	if err.Code != "" {
+		return company, err
+	}
+
+	return company, utils.Error{}
+}
+
+func (n *companyService) GetCompanyById(companyId int) (model.Company, utils.Error) {
+	company, err := n.companyRepo.GetCompanyById(companyId)
 	if err.Code != "" {
 		return company, err
 	}

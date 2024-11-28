@@ -12,6 +12,7 @@ import (
 
 type VacancyController struct {
 	vacancyService service.VacancyService
+	companyService service.CompanyService
 }
 
 func NewVacancyController(vacancyService service.VacancyService) VacancyController {
@@ -36,6 +37,14 @@ func (v *VacancyController) CreateVacancy(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&vacancyRequest); err != nil {
 		response = model.Response{
 			Message: "failed to parse the request body",
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	if err := v.validateVacancy(vacancyRequest); err != nil {
+		response = model.Response{
+			Message: err.Error(),
 		}
 
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
@@ -144,4 +153,95 @@ func (v *VacancyController) GetVacancyById(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(response)
+}
+
+func (v *VacancyController) validateVacancy(vacancyRequest vacancy.VacancyRequest) error {
+	if vacancyRequest.Code == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "code is required")
+	}
+
+	if vacancyRequest.Title == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "title is required")
+	}
+
+	if vacancyRequest.Description == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "description is required")
+	}
+
+	if vacancyRequest.Department == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "department is required")
+	}
+
+	if vacancyRequest.Section == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "section is required")
+	}
+
+	if vacancyRequest.Turn == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "turn is required")
+	}
+
+	if vacancyRequest.PublishDate == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "publish date is required")
+	}
+
+	if vacancyRequest.RegistrationDate == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "registration date is required")
+	}
+
+	if vacancyRequest.Area == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "area is required")
+	}
+
+	if len(vacancyRequest.Disabilities) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "at least one disability is required")
+	}
+
+	if len(vacancyRequest.Skills) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "at least one skill is required")
+	}
+
+	if len(vacancyRequest.Responsabilities) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "at least one responsability is required")
+	}
+
+	if len(vacancyRequest.Requirements) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "at least one requirement is required")
+	}
+
+	for _, requirement := range vacancyRequest.Requirements {
+		if requirement.Type == "" {
+			return fiber.NewError(fiber.StatusBadRequest, "requirement type is required")
+		}
+
+		if !requirement.Type.IsValid() {
+			return fiber.NewError(fiber.StatusBadRequest, "invalid requirement type. valid values are: 'desirable', 'obligatory'")
+		}
+
+		if requirement.Requirement == "" {
+			return fiber.NewError(fiber.StatusBadRequest, "requirement description is required")
+		}
+	}
+
+	if vacancyRequest.ContractType == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "contract type is required")
+	}
+
+	if !vacancyRequest.ContractType.IsValid() {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid contract type. valid values are: 'clt', 'pj', 'trainee'")
+	}
+
+	if vacancyRequest.CompanyId == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "company ID is required")
+	}
+
+	company, err := v.companyService.GetCompanyById(vacancyRequest.CompanyId)
+	if err.Code != "" {
+		return fiber.NewError(fiber.StatusBadRequest, "failed to get the company")
+	}
+
+	if company.Id == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "company not found")
+	}
+
+	return nil
 }

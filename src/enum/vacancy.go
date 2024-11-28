@@ -7,6 +7,14 @@ const (
 	Obligatory VacancyRequirementType = "obligatory"
 )
 
+func (v VacancyRequirementType) IsValid() bool {
+	switch v {
+	case Desirable, Obligatory:
+		return true
+	}
+	return false
+}
+
 type VacancyContractType string
 
 const (
@@ -14,3 +22,11 @@ const (
 	PJ      VacancyContractType = "pj"
 	Trainee VacancyContractType = "trainee"
 )
+
+func (v VacancyContractType) IsValid() bool {
+	switch v {
+	case CLT, PJ, Trainee:
+		return true
+	}
+	return false
+}
