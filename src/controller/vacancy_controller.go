@@ -155,6 +155,88 @@ func (v *VacancyController) GetVacancyById(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
+func (v *VacancyController) CandidateApply(ctx *fiber.Ctx) error {
+	var response model.Response
+	var vacancyApplyRequest vacancy.VacancyApplyRequest
+
+	if err := ctx.BodyParser(&vacancyApplyRequest); err != nil {
+		response = model.Response{
+			Message: "failed to parse the request body",
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	err := v.vacancyService.CandidateApplyVacancy(vacancyApplyRequest.CandidateId, vacancyApplyRequest.VacancyId)
+	if err.Code != "" {
+		response = model.Response{
+			Message: err.Message,
+			Code:    err.Code,
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	response = model.Response{
+		Message: "candidate applied to the vacancy successfully",
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(response)
+}
+
+func (v *VacancyController) ListVacancyApplies(ctx *fiber.Ctx) error {
+	var response model.Response
+
+	vacancyId, _ := strconv.Atoi(ctx.Params("id"))
+	vacancyApplies, err := v.vacancyService.GetVacancyAppliesByVacancyId(vacancyId)
+	if err.Code != "" {
+		response = model.Response{
+			Message: err.Message,
+			Code:    err.Code,
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	response = model.Response{
+		Message: "vacancy applies listed successfully",
+		Data:    vacancyApplies,
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(response)
+}
+
+func (v *VacancyController) UpdateVacancyApplyStatus(ctx *fiber.Ctx) error {
+	var response model.Response
+
+	vacancyApplyId, _ := strconv.Atoi(ctx.Params("id"))
+	status := ctx.Query("status")
+
+	if !enum.VacancyApplyStatus(status).IsValid() {
+		response = model.Response{
+			Message: "invalid status. valid values are: 'applied', 'approved', 'rejected'",
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	err := v.vacancyService.UpdateVacancyApplyStatus(vacancyApplyId, enum.VacancyApplyStatus(status))
+	if err.Code != "" {
+		response = model.Response{
+			Message: err.Message,
+			Code:    err.Code,
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	response = model.Response{
+		Message: "vacancy apply status updated successfully",
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(response)
+}
+
 func (v *VacancyController) validateVacancy(vacancyRequest vacancy.VacancyRequest) error {
 	if vacancyRequest.Code == "" {
 		return fiber.NewError(fiber.StatusBadRequest, "code is required")

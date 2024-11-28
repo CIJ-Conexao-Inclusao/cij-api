@@ -49,6 +49,7 @@ func migrateDb(db *gorm.DB) {
 	db.AutoMigrate(&vacancy.VacancySkill{})
 	db.AutoMigrate(&vacancy.VacancyRequirement{})
 	db.AutoMigrate(&vacancy.VacancyResponsability{})
+	db.AutoMigrate(&vacancy.VacancyApply{})
 
 	createDefaultRoles(db)
 	createDefaultDisabilities(db)

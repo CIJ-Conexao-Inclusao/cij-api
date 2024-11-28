@@ -56,8 +56,13 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	vacancyRequirementsRepo := vacancy.NewRequirementsRepo(db)
 	vacancyResponsabilitiesRepo := vacancy.NewResponsabilitiesRepo(db)
 	vacancyDisabilitiesRepo := vacancy.NewVacancyDisabilityRepo(db)
+	vacancyApplyRepo := vacancy.NewVacancyApplyRepo(db)
 
-	vacancyService := service.NewVacancyService(vacancyRepo, vacancySkillsRepo, vacancyRequirementsRepo, vacancyResponsabilitiesRepo, vacancyDisabilitiesRepo)
+	vacancyService := service.NewVacancyService(
+		vacancyRepo, vacancySkillsRepo, vacancyRequirementsRepo,
+		vacancyResponsabilitiesRepo, vacancyDisabilitiesRepo, vacancyApplyRepo, personRepo,
+		personDisabilityRepo,
+	)
 	vacancyController := controller.NewVacancyController(vacancyService)
 
 	reportsService := service.NewReportsService(personDisabilityRepo, activityRepo)
@@ -123,6 +128,10 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 		api.Get("/", vacancyController.ListVacancies)
 		api.Get("/:id", vacancyController.GetVacancyById)
 		api.Post("/", vacancyController.CreateVacancy)
+
+		api.Post("/apply", vacancyController.CandidateApply)
+		api.Get("/apply/:id", vacancyController.ListVacancyApplies)
+		api.Patch("/apply/:id", vacancyController.UpdateVacancyApplyStatus)
 	}
 
 	api = router.Group("/reports")

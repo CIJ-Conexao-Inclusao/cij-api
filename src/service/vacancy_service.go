@@ -4,18 +4,22 @@ import (
 	"cij_api/src/enum"
 	"cij_api/src/model"
 	modelVacancy "cij_api/src/model/vacancy"
-	repo "cij_api/src/repo/vacancy"
+	"cij_api/src/repo"
+	repoVacancy "cij_api/src/repo/vacancy"
 	"cij_api/src/utils"
 
 	"gorm.io/gorm"
 )
 
 type vacancyService struct {
-	vacancyRepo             repo.VacancyRepo
-	skillsRepo              repo.SkillsRepo
-	requirementsRepo        repo.RequirementsRepo
-	responsabilitiesRepo    repo.ResponsabilitiesRepo
-	vacancyDisabilitiesRepo repo.VacancyDisabilityRepo
+	vacancyRepo             repoVacancy.VacancyRepo
+	skillsRepo              repoVacancy.SkillsRepo
+	requirementsRepo        repoVacancy.RequirementsRepo
+	responsabilitiesRepo    repoVacancy.ResponsabilitiesRepo
+	vacancyDisabilitiesRepo repoVacancy.VacancyDisabilityRepo
+	vacancyAppliesRepo      repoVacancy.VacancyApplyRepo
+	personRepo              repo.PersonRepo
+	personDisabilitiesRepo  repo.PersonDisabilityRepo
 }
 
 type VacancyService interface {
@@ -24,14 +28,21 @@ type VacancyService interface {
 	GetVacancyById(id int) (modelVacancy.VacancyResponse, utils.Error)
 	UpdateVacancy(vacancy modelVacancy.VacancyRequest, id int) utils.Error
 	DeleteVacancy(id int) utils.Error
+
+	CandidateApplyVacancy(candidateId int, vacancyId int) utils.Error
+	GetVacancyAppliesByVacancyId(vacancyId int) ([]modelVacancy.VacancyApplyResponse, utils.Error)
+	UpdateVacancyApplyStatus(vacancyApplyId int, status enum.VacancyApplyStatus) utils.Error
 }
 
 func NewVacancyService(
-	vacancyRepo repo.VacancyRepo,
-	skillsRepo repo.SkillsRepo,
-	requirementsRepo repo.RequirementsRepo,
-	responsabilitiesRepo repo.ResponsabilitiesRepo,
-	vacancyDisabilitiesRepo repo.VacancyDisabilityRepo,
+	vacancyRepo repoVacancy.VacancyRepo,
+	skillsRepo repoVacancy.SkillsRepo,
+	requirementsRepo repoVacancy.RequirementsRepo,
+	responsabilitiesRepo repoVacancy.ResponsabilitiesRepo,
+	vacancyDisabilitiesRepo repoVacancy.VacancyDisabilityRepo,
+	vacancyAppliesRepo repoVacancy.VacancyApplyRepo,
+	personRepo repo.PersonRepo,
+	personDisabilitiesRepo repo.PersonDisabilityRepo,
 ) VacancyService {
 	return &vacancyService{
 		vacancyRepo:             vacancyRepo,
@@ -39,6 +50,9 @@ func NewVacancyService(
 		requirementsRepo:        requirementsRepo,
 		responsabilitiesRepo:    responsabilitiesRepo,
 		vacancyDisabilitiesRepo: vacancyDisabilitiesRepo,
+		vacancyAppliesRepo:      vacancyAppliesRepo,
+		personRepo:              personRepo,
+		personDisabilitiesRepo:  personDisabilitiesRepo,
 	}
 }
 
@@ -205,6 +219,84 @@ func (v *vacancyService) DeleteVacancy(id int) utils.Error {
 
 	if errTx != nil {
 		return vacancyServiceError("failed to delete the vacancy", "09")
+	}
+
+	return utils.Error{}
+}
+
+func (v *vacancyService) CandidateApplyVacancy(candidateId int, vacancyId int) utils.Error {
+	_, err := v.vacancyRepo.GetVacancyById(vacancyId)
+	if err.Code != "" {
+		return vacancyServiceError("failed to get the vacancy", "10")
+	}
+
+	_, err = v.personRepo.GetPersonById(candidateId, nil)
+	if err.Code != "" {
+		return vacancyServiceError("failed to get the person", "11")
+	}
+
+	vacancyApplyDb, err := v.vacancyAppliesRepo.GetVacancyApply(vacancyId, candidateId)
+	if err.Code != "" {
+		return vacancyServiceError("failed to get the vacancy apply", "12")
+	}
+
+	if vacancyApplyDb.Id != 0 {
+		return vacancyServiceError("the candidate already applied to the vacancy", "13")
+	}
+
+	vacancyApply := modelVacancy.VacancyApply{
+		VacancyId:   vacancyId,
+		CandidateId: candidateId,
+		Status:      enum.VacancyApplyApplied,
+	}
+
+	_, err = v.vacancyAppliesRepo.CreateVacancyApply(vacancyApply)
+	if err.Code != "" {
+		return vacancyServiceError("failed to apply the vacancy", "12")
+	}
+
+	return utils.Error{}
+}
+
+func (v *vacancyService) GetVacancyAppliesByVacancyId(vacancyId int) ([]modelVacancy.VacancyApplyResponse, utils.Error) {
+	vacancyApplies, err := v.vacancyAppliesRepo.ListVacancyAppliesByVacancyId(vacancyId)
+	if err.Code != "" {
+		return []modelVacancy.VacancyApplyResponse{}, vacancyServiceError("failed to get the vacancy applies", "13")
+	}
+
+	var vacancyAppliesResponse []modelVacancy.VacancyApplyResponse
+	for _, vacancyApply := range vacancyApplies {
+		person, err := v.personRepo.GetPersonById(vacancyApply.CandidateId, nil)
+		if err.Code != "" {
+			return []modelVacancy.VacancyApplyResponse{}, vacancyServiceError("failed to get the person", "14")
+		}
+
+		candidateDisabilities, err := v.personDisabilitiesRepo.GetPersonDisabilities(vacancyApply.CandidateId)
+		if err.Code != "" {
+			return []modelVacancy.VacancyApplyResponse{}, vacancyServiceError("failed to get the candidate disabilities", "15")
+		}
+
+		candidateDisabilitiesResponse := []model.DisabilityResponse{}
+		for _, candidateDisability := range candidateDisabilities {
+			candidateDisabilitiesResponse = append(candidateDisabilitiesResponse, candidateDisability.Disability.ToResponse())
+		}
+
+		vacancyApplyResponse := modelVacancy.VacancyApplyResponse{
+			Candidate: vacancyApply.Candidate.ToCandidateResponse(candidateDisabilitiesResponse, *person.Address),
+			Status:    vacancyApply.Status,
+			Id:        vacancyApply.Id,
+		}
+
+		vacancyAppliesResponse = append(vacancyAppliesResponse, vacancyApplyResponse)
+	}
+
+	return vacancyAppliesResponse, utils.Error{}
+}
+
+func (v *vacancyService) UpdateVacancyApplyStatus(vacancyApplyId int, status enum.VacancyApplyStatus) utils.Error {
+	err := v.vacancyAppliesRepo.UpdateVacancyApplyStatus(vacancyApplyId, status)
+	if err.Code != "" {
+		return vacancyServiceError("failed to update the vacancy apply status", "14")
 	}
 
 	return utils.Error{}

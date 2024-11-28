@@ -30,3 +30,19 @@ func (v VacancyContractType) IsValid() bool {
 	}
 	return false
 }
+
+type VacancyApplyStatus string
+
+const (
+	VacancyApplyApplied  VacancyApplyStatus = "applied"
+	VacancyApplyRejected VacancyApplyStatus = "rejected"
+	VacancyApplyAccepted VacancyApplyStatus = "accepted"
+)
+
+func (v VacancyApplyStatus) IsValid() bool {
+	switch v {
+	case VacancyApplyApplied, VacancyApplyRejected, VacancyApplyAccepted:
+		return true
+	}
+	return false
+}
