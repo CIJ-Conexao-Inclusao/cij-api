@@ -63,7 +63,7 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 		vacancyResponsabilitiesRepo, vacancyDisabilitiesRepo, vacancyApplyRepo, personRepo,
 		personDisabilityRepo,
 	)
-	vacancyController := controller.NewVacancyController(vacancyService)
+	vacancyController := controller.NewVacancyController(vacancyService, companyService)
 
 	reportsService := service.NewReportsService(personDisabilityRepo, activityRepo)
 	reportsController := controller.NewReportsController(reportsService)

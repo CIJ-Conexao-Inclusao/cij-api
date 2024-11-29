@@ -15,9 +15,10 @@ type VacancyController struct {
 	companyService service.CompanyService
 }
 
-func NewVacancyController(vacancyService service.VacancyService) VacancyController {
+func NewVacancyController(vacancyService service.VacancyService, companyService service.CompanyService) VacancyController {
 	return VacancyController{
 		vacancyService: vacancyService,
+		companyService: companyService,
 	}
 }
 
