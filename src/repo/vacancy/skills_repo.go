@@ -14,7 +14,7 @@ type SkillsRepo interface {
 	CreateSkill(createSkill model.VacancySkill, tx *gorm.DB) (int, utils.Error)
 	ListSkillsByVacancyId(vacancyId int) ([]model.VacancySkill, utils.Error)
 	UpdateSkill(skill model.VacancySkill, skillId int, tx *gorm.DB) utils.Error
-	DeleteSkill(skillId int) utils.Error
+	DeleteSkillsByVacancyId(vacancyId int, tx *gorm.DB) utils.Error
 }
 
 type skillsRepo struct {
@@ -76,9 +76,15 @@ func (s *skillsRepo) UpdateSkill(skill model.VacancySkill, skillId int, tx *gorm
 	return utils.Error{}
 }
 
-func (s *skillsRepo) DeleteSkill(skillId int) utils.Error {
-	if err := s.db.Where("id = ?", skillId).Delete(&model.VacancySkill{}).Error; err != nil {
-		return skillsRepoError("failed to delete the skill", "04")
+func (s *skillsRepo) DeleteSkillsByVacancyId(vacancyId int, tx *gorm.DB) utils.Error {
+	databaseConn := s.db
+
+	if tx != nil {
+		databaseConn = tx
+	}
+
+	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Unscoped().Delete(&model.VacancySkill{}).Error; err != nil {
+		return skillsRepoError("failed to delete the skills", "04")
 	}
 
 	return utils.Error{}

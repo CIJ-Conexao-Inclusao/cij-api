@@ -14,7 +14,7 @@ type ResponsabilitiesRepo interface {
 	CreateResponsability(createResponsability model.VacancyResponsability, tx *gorm.DB) (int, utils.Error)
 	ListResponsabilitiesByVacancyId(vacancyId int) ([]model.VacancyResponsability, utils.Error)
 	UpdateResponsability(responsability model.VacancyResponsability, responsabilityId int, tx *gorm.DB) utils.Error
-	DeleteResponsability(responsabilityId int) utils.Error
+	DeleteResponsabilitiesByVacancyId(vacancyId int, tx *gorm.DB) utils.Error
 }
 
 type responsabilitiesRepo struct {
@@ -76,9 +76,15 @@ func (r *responsabilitiesRepo) UpdateResponsability(responsability model.Vacancy
 	return utils.Error{}
 }
 
-func (r *responsabilitiesRepo) DeleteResponsability(responsabilityId int) utils.Error {
-	if err := r.db.Where("id = ?", responsabilityId).Delete(&model.VacancyResponsability{}).Error; err != nil {
-		return responsabilitiesRepoError("failed to delete the responsability", "04")
+func (r *responsabilitiesRepo) DeleteResponsabilitiesByVacancyId(vacancyId int, tx *gorm.DB) utils.Error {
+	databaseConn := r.db
+
+	if tx != nil {
+		databaseConn = tx
+	}
+
+	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Unscoped().Delete(&model.VacancyResponsability{}).Error; err != nil {
+		return responsabilitiesRepoError("failed to delete the responsabilities", "04")
 	}
 
 	return utils.Error{}

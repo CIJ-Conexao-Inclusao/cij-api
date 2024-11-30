@@ -157,6 +157,55 @@ func (v *VacancyController) GetVacancyById(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
+func (v *VacancyController) UpdateVacancy(ctx *fiber.Ctx) error {
+	var vacancyRequest vacancy.VacancyRequest
+	var response model.Response
+
+	vacancyId := ctx.Params("id")
+	vacancyIdInt, _ := strconv.Atoi(vacancyId)
+
+	if err := ctx.BodyParser(&vacancyRequest); err != nil {
+		response = model.Response{
+			Message: "failed to parse the request body",
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	if err := v.validateVacancy(vacancyRequest); err != nil {
+		response = model.Response{
+			Message: err.Error(),
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	err := v.vacancyService.UpdateVacancy(vacancyRequest, vacancyIdInt)
+	if err.Code != "" {
+		response = model.Response{
+			Message: err.Message,
+			Code:    err.Code,
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	response = model.Response{
+		Message: "vacancy updated successfully",
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(response)
+}
+
+// CandidateApply
+// @Summary Candidate apply to a vacancy
+// @Description Candidate apply to a vacancy
+// @Tags Vacancies
+// @Accept json
+// @Produce json
+// @Param vacancy body vacancy.VacancyApplyRequest true "Vacancy Apply"
+// @Success 200 {object} model.Response
+// @Router /vacancies/apply [post]
 func (v *VacancyController) CandidateApply(ctx *fiber.Ctx) error {
 	var response model.Response
 	var vacancyApplyRequest vacancy.VacancyApplyRequest
@@ -186,6 +235,15 @@ func (v *VacancyController) CandidateApply(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
+// ListVacancyApplies
+// @Summary List vacancy applies
+// @Description List vacancy applies
+// @Tags Vacancies
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} model.Response
+// @Router /vacancies/apply/{id} [get]
 func (v *VacancyController) ListVacancyApplies(ctx *fiber.Ctx) error {
 	var response model.Response
 
@@ -208,6 +266,16 @@ func (v *VacancyController) ListVacancyApplies(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
+// UpdateVacancyApplyStatus
+// @Summary Update vacancy apply status
+// @Description Update vacancy apply status
+// @Tags Vacancies
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Param status query string true "Status"
+// @Success 200 {object} model.Response
+// @Router /vacancies/apply/{id} [patch]
 func (v *VacancyController) UpdateVacancyApplyStatus(ctx *fiber.Ctx) error {
 	var response model.Response
 

@@ -14,7 +14,7 @@ type RequirementsRepo interface {
 	CreateRequirement(createRequirement model.VacancyRequirement, tx *gorm.DB) (int, utils.Error)
 	ListRequirementsByVacancyId(vacancyId int) ([]model.VacancyRequirement, utils.Error)
 	UpdateRequirement(requirement model.VacancyRequirement, requirementId int, tx *gorm.DB) utils.Error
-	DeleteRequirement(requirementId int) utils.Error
+	DeleteRequirementsByVacancyId(vacancyId int, tx *gorm.DB) utils.Error
 }
 
 type requirementsRepo struct {
@@ -76,9 +76,15 @@ func (r *requirementsRepo) UpdateRequirement(requirement model.VacancyRequiremen
 	return utils.Error{}
 }
 
-func (r *requirementsRepo) DeleteRequirement(requirementId int) utils.Error {
-	if err := r.db.Where("id = ?", requirementId).Delete(&model.VacancyRequirement{}).Error; err != nil {
-		return requirementsRepoError("failed to delete the requirement", "04")
+func (r *requirementsRepo) DeleteRequirementsByVacancyId(vacancyId int, tx *gorm.DB) utils.Error {
+	databaseConn := r.db
+
+	if tx != nil {
+		databaseConn = tx
+	}
+
+	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Unscoped().Delete(&model.VacancyRequirement{}).Error; err != nil {
+		return requirementsRepoError("failed to delete the requirements", "04")
 	}
 
 	return utils.Error{}

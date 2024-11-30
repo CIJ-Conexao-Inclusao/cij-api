@@ -22,6 +22,7 @@ type VacancyRepo interface {
 		searchText string,
 	) ([]model.Vacancy, utils.Error)
 	UpsertVacancy(vacancy model.Vacancy, tx *gorm.DB) (int, utils.Error)
+	UpdateVacancy(vacancy model.Vacancy, tx *gorm.DB) utils.Error
 	DeleteVacancy(id int) utils.Error
 }
 
@@ -106,6 +107,20 @@ func (v *vacancyRepo) UpsertVacancy(vacancy model.Vacancy, tx *gorm.DB) (int, ut
 	}
 
 	return vacancy.Id, utils.Error{}
+}
+
+func (v *vacancyRepo) UpdateVacancy(vacancy model.Vacancy, tx *gorm.DB) utils.Error {
+	databaseConn := v.db
+
+	if tx != nil {
+		databaseConn = tx
+	}
+
+	if err := databaseConn.Model(model.Vacancy{}).Where("id = ?", vacancy.Id).Updates(vacancy).Error; err != nil {
+		return vacancyRepoError("failed to update the vacancy", "04")
+	}
+
+	return utils.Error{}
 }
 
 func (v *vacancyRepo) DeleteVacancy(id int) utils.Error {

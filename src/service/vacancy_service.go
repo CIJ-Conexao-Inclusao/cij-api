@@ -197,12 +197,81 @@ func (v *vacancyService) GetVacancyById(id int) (modelVacancy.VacancyResponse, u
 }
 
 func (v *vacancyService) UpdateVacancy(vacancy modelVacancy.VacancyRequest, id int) utils.Error {
-	// vacancyModel := vacancy.ToModel()
+	vacancyModel := vacancy.ToModel()
+
+	_, err := v.vacancyRepo.GetVacancyById(id)
+	if err.Code != "" {
+		return vacancyServiceError("failed to get the vacancy", "07")
+	}
+
+	vacancyModel.Id = id
 
 	errTx := v.vacancyRepo.BeginTransaction(func(tx *gorm.DB) error {
-		_, err := v.vacancyRepo.GetVacancyById(id)
+		err := v.vacancyRepo.UpdateVacancy(*vacancyModel, tx)
 		if err.Code != "" {
 			return err
+		}
+
+		err = v.skillsRepo.DeleteSkillsByVacancyId(id, tx)
+		if err.Code != "" {
+			return err
+		}
+
+		err = v.requirementsRepo.DeleteRequirementsByVacancyId(id, tx)
+		if err.Code != "" {
+			return err
+		}
+
+		err = v.responsabilitiesRepo.DeleteResponsabilitiesByVacancyId(id, tx)
+		if err.Code != "" {
+			return err
+		}
+
+		err = v.vacancyDisabilitiesRepo.ClearVacancyDisability(id, tx)
+		if err.Code != "" {
+			return err
+		}
+
+		for _, skill := range vacancy.Skills {
+			skillModel := skill.ToModel()
+			skillModel.VacancyId = id
+
+			_, err := v.skillsRepo.CreateSkill(*skillModel, tx)
+			if err.Code != "" {
+				return err
+			}
+		}
+
+		for _, requirement := range vacancy.Requirements {
+			requirementModel := requirement.ToModel()
+			requirementModel.VacancyId = id
+
+			_, err := v.requirementsRepo.CreateRequirement(*requirementModel, tx)
+			if err.Code != "" {
+				return err
+			}
+		}
+
+		for _, responsability := range vacancy.Responsabilities {
+			responsabilityModel := responsability.ToModel()
+			responsabilityModel.VacancyId = id
+
+			_, err := v.responsabilitiesRepo.CreateResponsability(*responsabilityModel, tx)
+			if err.Code != "" {
+				return err
+			}
+		}
+
+		for _, disability := range vacancy.Disabilities {
+			disabilityModel := modelVacancy.VacancyDisability{
+				VacancyId:    id,
+				DisabilityId: int(disability),
+			}
+
+			err := v.vacancyDisabilitiesRepo.UpsertVacancyDisability(disabilityModel, tx)
+			if err.Code != "" {
+				return err
+			}
 		}
 
 		return nil
