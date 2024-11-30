@@ -26,6 +26,7 @@ type Vacancy struct {
 }
 
 type VacancyResponse struct {
+	Id               int                             `json:"id"`
 	Code             string                          `json:"code"`
 	Title            string                          `json:"title"`
 	Description      string                          `json:"description"`
@@ -44,6 +45,7 @@ type VacancyResponse struct {
 }
 
 type VacancySimpleResponse struct {
+	Id           int                        `json:"id"`
 	Code         string                     `json:"code"`
 	Title        string                     `json:"title"`
 	Area         string                     `json:"area"`
@@ -109,6 +111,7 @@ func (v *Vacancy) ToResponse(
 	}
 
 	return VacancyResponse{
+		Id:               v.Id,
 		Code:             v.Code,
 		Title:            v.Title,
 		Description:      v.Description,
@@ -129,6 +132,7 @@ func (v *Vacancy) ToResponse(
 
 func (v *Vacancy) ToSimpleResponse(disabilities []model.DisabilityResponse) VacancySimpleResponse {
 	return VacancySimpleResponse{
+		Id:           v.Id,
 		Code:         v.Code,
 		Title:        v.Title,
 		Area:         v.Area,
