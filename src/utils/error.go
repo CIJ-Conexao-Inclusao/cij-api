@@ -68,4 +68,5 @@ const (
 	ConfigErrorType     ErrorEntity = 7
 	ActivityErrorType   ErrorEntity = 8
 	ReportsErrorType    ErrorEntity = 9
+	VacancyErrorType    ErrorEntity = 10
 )

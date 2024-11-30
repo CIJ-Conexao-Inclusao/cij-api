@@ -4,6 +4,7 @@ import (
 	"cij_api/src/config"
 	"cij_api/src/database"
 	"cij_api/src/model"
+	vacancy "cij_api/src/model/vacancy"
 	"cij_api/src/router"
 	"log"
 
@@ -42,6 +43,13 @@ func migrateDb(db *gorm.DB) {
 	db.AutoMigrate(&model.News{})
 	db.AutoMigrate(&model.Role{})
 	db.AutoMigrate(&model.Activity{})
+
+	db.AutoMigrate(&vacancy.Vacancy{})
+	db.AutoMigrate(&vacancy.VacancyDisability{})
+	db.AutoMigrate(&vacancy.VacancySkill{})
+	db.AutoMigrate(&vacancy.VacancyRequirement{})
+	db.AutoMigrate(&vacancy.VacancyResponsability{})
+	db.AutoMigrate(&vacancy.VacancyApply{})
 
 	createDefaultRoles(db)
 	createDefaultDisabilities(db)

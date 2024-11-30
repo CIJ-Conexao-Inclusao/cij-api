@@ -5,6 +5,7 @@ import (
 	"cij_api/src/controller"
 	"cij_api/src/middleware"
 	"cij_api/src/repo"
+	vacancy "cij_api/src/repo/vacancy"
 	"cij_api/src/service"
 	"fmt"
 
@@ -49,6 +50,20 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 
 	activityService := service.NewActivityService(activityRepo)
 	activityController := controller.NewActivityController(activityService)
+
+	vacancyRepo := vacancy.NewVacancyRepo(db)
+	vacancySkillsRepo := vacancy.NewSkillsRepo(db)
+	vacancyRequirementsRepo := vacancy.NewRequirementsRepo(db)
+	vacancyResponsabilitiesRepo := vacancy.NewResponsabilitiesRepo(db)
+	vacancyDisabilitiesRepo := vacancy.NewVacancyDisabilityRepo(db)
+	vacancyApplyRepo := vacancy.NewVacancyApplyRepo(db)
+
+	vacancyService := service.NewVacancyService(
+		vacancyRepo, vacancySkillsRepo, vacancyRequirementsRepo,
+		vacancyResponsabilitiesRepo, vacancyDisabilitiesRepo, vacancyApplyRepo, personRepo,
+		personDisabilityRepo,
+	)
+	vacancyController := controller.NewVacancyController(vacancyService, companyService)
 
 	reportsService := service.NewReportsService(personDisabilityRepo, activityRepo)
 	reportsController := controller.NewReportsController(reportsService)
@@ -106,6 +121,21 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 
 		api.Use(middleware.AuthAdmin)
 		api.Post("/", activityController.CreateActivity)
+	}
+
+	api = router.Group("/vacancies")
+	{
+		api.Get("/", vacancyController.ListVacancies)
+		api.Get("/:id", vacancyController.GetVacancyById)
+		api.Post("/apply", vacancyController.CandidateApply)
+
+		api.Use(middleware.AuthCompany)
+		api.Post("/", vacancyController.CreateVacancy)
+		api.Put("/:id", vacancyController.UpdateVacancy)
+		api.Delete("/:id", vacancyController.DeleteVacancy)
+
+		api.Get("/apply/:id", vacancyController.ListVacancyApplies)
+		api.Patch("/apply/:id", vacancyController.UpdateVacancyApplyStatus)
 	}
 
 	api = router.Group("/reports")
