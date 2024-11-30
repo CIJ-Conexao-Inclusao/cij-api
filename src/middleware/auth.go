@@ -28,7 +28,7 @@ func AuthUser(ctx *fiber.Ctx) error {
 	claims := token.Claims.(jwt.MapClaims)
 	tokenRole := claims["role"].(string)
 
-	if tokenRole != PERSON_ROLE {
+	if tokenRole != PERSON_ROLE && tokenRole != ADMIN_ROLE {
 		response = model.Response{
 			Message: "role don't have permission",
 		}
@@ -72,7 +72,7 @@ func AuthCompany(ctx *fiber.Ctx) error {
 	claims := token.Claims.(jwt.MapClaims)
 	tokenRole := claims["role"].(string)
 
-	if tokenRole != COMPANY_ROLE {
+	if tokenRole != COMPANY_ROLE && tokenRole != ADMIN_ROLE {
 		response = model.Response{
 			Message: "role don't have permission",
 		}

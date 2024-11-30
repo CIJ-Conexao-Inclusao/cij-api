@@ -235,11 +235,7 @@ func (v *vacancyService) CandidateApplyVacancy(candidateId int, vacancyId int) u
 		return vacancyServiceError("failed to get the person", "11")
 	}
 
-	vacancyApplyDb, err := v.vacancyAppliesRepo.GetVacancyApply(vacancyId, candidateId)
-	if err.Code != "" {
-		return vacancyServiceError("failed to get the vacancy apply", "12")
-	}
-
+	vacancyApplyDb, _ := v.vacancyAppliesRepo.GetVacancyApply(vacancyId, candidateId)
 	if vacancyApplyDb.Id != 0 {
 		return vacancyServiceError("the candidate already applied to the vacancy", "13")
 	}
