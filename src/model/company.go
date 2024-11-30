@@ -33,11 +33,12 @@ type CompanyResponse struct {
 
 func (c *Company) ToResponse(user User) CompanyResponse {
 	return CompanyResponse{
-		Id:    c.Id,
-		Name:  c.Name,
-		Cnpj:  c.Cnpj,
-		Phone: c.Phone,
-		User:  user.ToResponse(),
+		Id:      c.Id,
+		Name:    c.Name,
+		Cnpj:    c.Cnpj,
+		Phone:   c.Phone,
+		User:    user.ToResponse(),
+		Address: c.Address.ToResponse(),
 	}
 }
 

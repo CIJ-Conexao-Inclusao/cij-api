@@ -68,7 +68,7 @@ func (n *companyRepo) ListCompanies() ([]model.Company, utils.Error) {
 func (n *companyRepo) GetCompanyById(companyId int) (model.Company, utils.Error) {
 	var company model.Company
 
-	err := n.db.Model(model.Company{}).Preload("User").Where("id = ?", companyId).Find(&company).Error
+	err := n.db.Model(model.Company{}).Preload("User").Preload("Address").Where("id = ?", companyId).Find(&company).Error
 	if err != nil {
 		return company, companyRepoError("failed to get the company", "03")
 	}
@@ -79,7 +79,7 @@ func (n *companyRepo) GetCompanyById(companyId int) (model.Company, utils.Error)
 func (n *companyRepo) GetCompanyByUserId(userId int) (model.Company, utils.Error) {
 	var company model.Company
 
-	err := n.db.Model(model.Company{}).Preload("User").Where("user_id = ?", userId).Find(&company).Error
+	err := n.db.Model(model.Company{}).Preload("User").Preload("Address").Where("user_id = ?", userId).Find(&company).Error
 	if err != nil {
 		return company, companyRepoError("failed to get the company", "04")
 	}
@@ -106,7 +106,7 @@ func (n *companyRepo) DeleteCompany(companyId int) utils.Error {
 func (n *companyRepo) GetCompanyByCnpj(cnpj string) (model.Company, utils.Error) {
 	var company model.Company
 
-	err := n.db.Model(model.Company{}).Preload("User").Where("cnpj = ?", cnpj).Find(&company).Error
+	err := n.db.Model(model.Company{}).Preload("User").Preload("Address").Where("cnpj = ?", cnpj).Find(&company).Error
 	if err != nil {
 		return company, companyRepoError("failed to get the company", "07")
 	}
