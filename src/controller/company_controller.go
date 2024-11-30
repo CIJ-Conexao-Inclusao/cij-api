@@ -137,6 +137,49 @@ func (n *CompanyController) ListCompanies(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(response)
 }
 
+// GetCompany
+// @Summary Get a company by ID.
+// @Description get a company by ID and their user.
+// @Tags Companies
+// @Accept application/json
+// @Produce json
+// @Param id path string true "Company ID"
+// @Success 200 {object} model.CompanyResponse
+// @Failure 400 {object} string "bad request"
+// @Failure 500 {object} string "internal server error"
+// @Router /companies/:id [get]
+func (n *CompanyController) GetCompany(ctx *fiber.Ctx) error {
+	var response model.Response
+
+	companyId := ctx.Params("id")
+
+	idInt, errConv := strconv.Atoi(companyId)
+	if errConv != nil {
+		response = model.Response{
+			Message: errConv.Error(),
+		}
+
+		return ctx.Status(http.StatusBadRequest).JSON(response)
+	}
+
+	company, err := n.companyService.GetCompanyById(idInt)
+	if err.Code != "" {
+		response = model.Response{
+			Message: err.Error(),
+			Code:    err.Code,
+		}
+
+		return ctx.Status(http.StatusInternalServerError).JSON(response)
+	}
+
+	response = model.Response{
+		Message: "success",
+		Data:    company.ToResponse(*company.User),
+	}
+
+	return ctx.Status(http.StatusOK).JSON(response)
+}
+
 // UpdateCompany
 // @Summary Update a company.
 // @Description update an existent company and their user.
