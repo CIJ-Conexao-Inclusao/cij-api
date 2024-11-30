@@ -24,7 +24,7 @@ type vacancyService struct {
 
 type VacancyService interface {
 	CreateVacancy(vacancy modelVacancy.VacancyRequest) utils.Error
-	ListVacancies(page int, perPage int, companyId int, disabilityCategory string, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error)
+	ListVacancies(page int, perPage int, companyId int, disabilityId int, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error)
 	GetVacancyById(id int) (modelVacancy.VacancyResponse, utils.Error)
 	UpdateVacancy(vacancy modelVacancy.VacancyRequest, id int) utils.Error
 	DeleteVacancy(id int) utils.Error
@@ -123,14 +123,15 @@ func (v *vacancyService) CreateVacancy(vacancy modelVacancy.VacancyRequest) util
 	return utils.Error{}
 }
 
-func (v *vacancyService) ListVacancies(page int, perPage int, companyId int, disabilityCategory string, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error) {
+func (v *vacancyService) ListVacancies(page int, perPage int, companyId int, disabilityId int, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error) {
 	var vacanciesResponse []modelVacancy.VacancySimpleResponse
 
-	vacancies, err := v.vacancyRepo.ListVacancies(page, perPage, companyId, disabilityCategory, area, contractType, searchText)
+	vacancies, err := v.vacancyRepo.ListVacancies(page, perPage, companyId, area, contractType, searchText)
 	if err.Code != "" {
 		return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to list the vacancies", "02")
 	}
 
+DisabilityLoop:
 	for _, vacancy := range vacancies {
 		var disabilities []model.DisabilityResponse
 
@@ -139,8 +140,15 @@ func (v *vacancyService) ListVacancies(page int, perPage int, companyId int, dis
 			return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to get the disabilities", "03")
 		}
 
+		uniqueDisabilities := map[int]bool{}
+
 		for _, vacancyDisability := range vacancyDisabilities {
 			disabilities = append(disabilities, vacancyDisability.Disability.ToResponse())
+			uniqueDisabilities[vacancyDisability.Disability.Id] = true
+		}
+
+		if disabilityId != 0 && !uniqueDisabilities[disabilityId] {
+			continue DisabilityLoop
 		}
 
 		vacanciesResponse = append(vacanciesResponse, vacancy.ToSimpleResponse(disabilities))

@@ -86,7 +86,7 @@ func (v *VacancyController) CreateVacancy(ctx *fiber.Ctx) error {
 func (v *VacancyController) ListVacancies(ctx *fiber.Ctx) error {
 	var response model.Response
 
-	page, perPage, companyId, disability := ctx.Query("page"), ctx.Query("per_page"), ctx.Query("company_id"), ctx.Query("disability")
+	page, perPage, companyId, disabilityId := ctx.Query("page"), ctx.Query("per_page"), ctx.Query("company_id"), ctx.Query("disability_id")
 	area, contractType, searchText := ctx.Query("area"), ctx.Query("contract_type"), ctx.Query("search_text")
 
 	pageInt, _ := strconv.Atoi(page)
@@ -96,8 +96,9 @@ func (v *VacancyController) ListVacancies(ctx *fiber.Ctx) error {
 	}
 
 	companyIdInt, _ := strconv.Atoi(companyId)
+	disabilityIdInt, _ := strconv.Atoi(disabilityId)
 
-	vacancies, err := v.vacancyService.ListVacancies(pageInt, perPageInt, companyIdInt, disability, area, enum.VacancyContractType(contractType), searchText)
+	vacancies, err := v.vacancyService.ListVacancies(pageInt, perPageInt, companyIdInt, disabilityIdInt, area, enum.VacancyContractType(contractType), searchText)
 	if err.Code != "" {
 		response := model.Response{
 			Message: err.Message,
