@@ -157,6 +157,16 @@ func (v *VacancyController) GetVacancyById(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
+// UpdateVacancy
+// @Summary Update a vacancy
+// @Description Update a vacancy
+// @Tags Vacancies
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Param vacancy body vacancy.VacancyRequest true "Vacancy"
+// @Success 200 {object} model.Response
+// @Router /vacancies/{id} [put]
 func (v *VacancyController) UpdateVacancy(ctx *fiber.Ctx) error {
 	var vacancyRequest vacancy.VacancyRequest
 	var response model.Response
@@ -197,6 +207,15 @@ func (v *VacancyController) UpdateVacancy(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
+// DeleteVacancy
+// @Summary Delete a vacancy
+// @Description Delete a vacancy
+// @Tags Vacancies
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} model.Response
+// @Router /vacancies/{id} [delete]
 func (v *VacancyController) DeleteVacancy(ctx *fiber.Ctx) error {
 	var response model.Response
 
@@ -223,7 +242,7 @@ func (v *VacancyController) DeleteVacancy(ctx *fiber.Ctx) error {
 // CandidateApply
 // @Summary Candidate apply to a vacancy
 // @Description Candidate apply to a vacancy
-// @Tags Vacancies
+// @Tags VacancyApplies
 // @Accept json
 // @Produce json
 // @Param vacancy body vacancy.VacancyApplyRequest true "Vacancy Apply"
@@ -261,7 +280,7 @@ func (v *VacancyController) CandidateApply(ctx *fiber.Ctx) error {
 // ListVacancyApplies
 // @Summary List vacancy applies
 // @Description List vacancy applies
-// @Tags Vacancies
+// @Tags VacancyApplies
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
@@ -292,7 +311,7 @@ func (v *VacancyController) ListVacancyApplies(ctx *fiber.Ctx) error {
 // UpdateVacancyApplyStatus
 // @Summary Update vacancy apply status
 // @Description Update vacancy apply status
-// @Tags Vacancies
+// @Tags VacancyApplies
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"

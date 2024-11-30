@@ -127,11 +127,13 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 	{
 		api.Get("/", vacancyController.ListVacancies)
 		api.Get("/:id", vacancyController.GetVacancyById)
+		api.Post("/apply", vacancyController.CandidateApply)
+
+		api.Use(middleware.AuthCompany)
 		api.Post("/", vacancyController.CreateVacancy)
 		api.Put("/:id", vacancyController.UpdateVacancy)
 		api.Delete("/:id", vacancyController.DeleteVacancy)
 
-		api.Post("/apply", vacancyController.CandidateApply)
 		api.Get("/apply/:id", vacancyController.ListVacancyApplies)
 		api.Patch("/apply/:id", vacancyController.UpdateVacancyApplyStatus)
 	}

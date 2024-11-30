@@ -318,6 +318,13 @@ definitions:
       id:
         type: integer
     type: object
+  model.VacancyApplyRequest:
+    properties:
+      candidate_id:
+        type: integer
+      vacancy_id:
+        type: integer
+    type: object
   model.VacancyRequest:
     properties:
       area:
@@ -1124,6 +1131,26 @@ paths:
       tags:
       - Vacancies
   /vacancies/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a vacancy
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Delete a vacancy
+      tags:
+      - Vacancies
     get:
       consumes:
       - application/json
@@ -1144,4 +1171,98 @@ paths:
       summary: Get a vacancy by ID
       tags:
       - Vacancies
+    put:
+      consumes:
+      - application/json
+      description: Update a vacancy
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Vacancy
+        in: body
+        name: vacancy
+        required: true
+        schema:
+          $ref: '#/definitions/model.VacancyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Update a vacancy
+      tags:
+      - Vacancies
+  /vacancies/apply:
+    post:
+      consumes:
+      - application/json
+      description: Candidate apply to a vacancy
+      parameters:
+      - description: Vacancy Apply
+        in: body
+        name: vacancy
+        required: true
+        schema:
+          $ref: '#/definitions/model.VacancyApplyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Candidate apply to a vacancy
+      tags:
+      - VacancyApplies
+  /vacancies/apply/{id}:
+    get:
+      consumes:
+      - application/json
+      description: List vacancy applies
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: List vacancy applies
+      tags:
+      - VacancyApplies
+    patch:
+      consumes:
+      - application/json
+      description: Update vacancy apply status
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status
+        in: query
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Update vacancy apply status
+      tags:
+      - VacancyApplies
 swagger: "2.0"

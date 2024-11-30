@@ -1133,6 +1133,109 @@ const docTemplate = `{
                 }
             }
         },
+        "/vacancies/apply": {
+            "post": {
+                "description": "Candidate apply to a vacancy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VacancyApplies"
+                ],
+                "summary": "Candidate apply to a vacancy",
+                "parameters": [
+                    {
+                        "description": "Vacancy Apply",
+                        "name": "vacancy",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.VacancyApplyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/vacancies/apply/{id}": {
+            "get": {
+                "description": "List vacancy applies",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VacancyApplies"
+                ],
+                "summary": "List vacancy applies",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update vacancy apply status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VacancyApplies"
+                ],
+                "summary": "Update vacancy apply status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Status",
+                        "name": "status",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/vacancies/{id}": {
             "get": {
                 "description": "Get a vacancy by ID",
@@ -1146,6 +1249,75 @@ const docTemplate = `{
                     "Vacancies"
                 ],
                 "summary": "Get a vacancy by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a vacancy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vacancies"
+                ],
+                "summary": "Update a vacancy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Vacancy",
+                        "name": "vacancy",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.VacancyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a vacancy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vacancies"
+                ],
+                "summary": "Delete a vacancy",
                 "parameters": [
                     {
                         "type": "string",
@@ -1640,6 +1812,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.VacancyApplyRequest": {
+            "type": "object",
+            "properties": {
+                "candidate_id": {
+                    "type": "integer"
+                },
+                "vacancy_id": {
                     "type": "integer"
                 }
             }
