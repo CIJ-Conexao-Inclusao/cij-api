@@ -16,6 +16,7 @@ type VacancyApplyRepo interface {
 	GetVacancyApply(vacancyId int, candidateId int) (model.VacancyApply, utils.Error)
 	ListVacancyAppliesByVacancyId(vacancyId int) ([]model.VacancyApply, utils.Error)
 	UpdateVacancyApplyStatus(vacancyApplyId int, status enum.VacancyApplyStatus) utils.Error
+	DeleteVacancyAppliesByVacancyId(vacancyId int, tx *gorm.DB) utils.Error
 }
 
 type vacancyApplyRepo struct {
@@ -70,6 +71,20 @@ func (v *vacancyApplyRepo) ListVacancyAppliesByVacancyId(vacancyId int) ([]model
 func (v *vacancyApplyRepo) UpdateVacancyApplyStatus(vacancyApplyId int, status enum.VacancyApplyStatus) utils.Error {
 	if err := v.db.Model(model.VacancyApply{}).Where("id = ?", vacancyApplyId).Update("status", status).Error; err != nil {
 		return vacancyApplyRepoError("failed to update the vacancy apply status", "03")
+	}
+
+	return utils.Error{}
+}
+
+func (v *vacancyApplyRepo) DeleteVacancyAppliesByVacancyId(vacancyId int, tx *gorm.DB) utils.Error {
+	databaseConn := v.db
+
+	if tx != nil {
+		databaseConn = tx
+	}
+
+	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Unscoped().Delete(&model.VacancyApply{}).Error; err != nil {
+		return vacancyApplyRepoError("failed to delete the vacancy applies", "04")
 	}
 
 	return utils.Error{}

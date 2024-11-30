@@ -83,7 +83,7 @@ func (s *skillsRepo) DeleteSkillsByVacancyId(vacancyId int, tx *gorm.DB) utils.E
 		databaseConn = tx
 	}
 
-	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Unscoped().Delete(&model.VacancySkill{}).Error; err != nil {
+	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Delete(&model.VacancySkill{}).Error; err != nil {
 		return skillsRepoError("failed to delete the skills", "04")
 	}
 

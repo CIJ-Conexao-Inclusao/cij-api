@@ -129,6 +129,7 @@ func NewRouter(router *fiber.App, db *gorm.DB) *fiber.App {
 		api.Get("/:id", vacancyController.GetVacancyById)
 		api.Post("/", vacancyController.CreateVacancy)
 		api.Put("/:id", vacancyController.UpdateVacancy)
+		api.Delete("/:id", vacancyController.DeleteVacancy)
 
 		api.Post("/apply", vacancyController.CandidateApply)
 		api.Get("/apply/:id", vacancyController.ListVacancyApplies)

@@ -197,6 +197,29 @@ func (v *VacancyController) UpdateVacancy(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
+func (v *VacancyController) DeleteVacancy(ctx *fiber.Ctx) error {
+	var response model.Response
+
+	vacancyId := ctx.Params("id")
+	vacancyIdInt, _ := strconv.Atoi(vacancyId)
+
+	err := v.vacancyService.DeleteVacancy(vacancyIdInt)
+	if err.Code != "" {
+		response = model.Response{
+			Message: err.Message,
+			Code:    err.Code,
+		}
+
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	response = model.Response{
+		Message: "vacancy deleted successfully",
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(response)
+}
+
 // CandidateApply
 // @Summary Candidate apply to a vacancy
 // @Description Candidate apply to a vacancy

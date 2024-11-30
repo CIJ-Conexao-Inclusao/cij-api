@@ -83,7 +83,7 @@ func (r *requirementsRepo) DeleteRequirementsByVacancyId(vacancyId int, tx *gorm
 		databaseConn = tx
 	}
 
-	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Unscoped().Delete(&model.VacancyRequirement{}).Error; err != nil {
+	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Delete(&model.VacancyRequirement{}).Error; err != nil {
 		return requirementsRepoError("failed to delete the requirements", "04")
 	}
 

@@ -285,8 +285,38 @@ func (v *vacancyService) UpdateVacancy(vacancy modelVacancy.VacancyRequest, id i
 }
 
 func (v *vacancyService) DeleteVacancy(id int) utils.Error {
+	_, err := v.vacancyRepo.GetVacancyById(id)
+	if err.Code != "" {
+		return vacancyServiceError("failed to get the vacancy", "07")
+	}
+
 	errTx := v.vacancyRepo.BeginTransaction(func(tx *gorm.DB) error {
-		_, err := v.vacancyRepo.GetVacancyById(id)
+		err := v.skillsRepo.DeleteSkillsByVacancyId(id, tx)
+		if err.Code != "" {
+			return err
+		}
+
+		err = v.requirementsRepo.DeleteRequirementsByVacancyId(id, tx)
+		if err.Code != "" {
+			return err
+		}
+
+		err = v.responsabilitiesRepo.DeleteResponsabilitiesByVacancyId(id, tx)
+		if err.Code != "" {
+			return err
+		}
+
+		err = v.vacancyDisabilitiesRepo.ClearVacancyDisability(id, tx)
+		if err.Code != "" {
+			return err
+		}
+
+		err = v.vacancyAppliesRepo.DeleteVacancyAppliesByVacancyId(id, tx)
+		if err.Code != "" {
+			return err
+		}
+
+		err = v.vacancyRepo.DeleteVacancy(id)
 		if err.Code != "" {
 			return err
 		}

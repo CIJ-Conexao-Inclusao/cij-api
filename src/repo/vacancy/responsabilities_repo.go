@@ -83,7 +83,7 @@ func (r *responsabilitiesRepo) DeleteResponsabilitiesByVacancyId(vacancyId int, 
 		databaseConn = tx
 	}
 
-	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Unscoped().Delete(&model.VacancyResponsability{}).Error; err != nil {
+	if err := databaseConn.Where("vacancy_id = ?", vacancyId).Delete(&model.VacancyResponsability{}).Error; err != nil {
 		return responsabilitiesRepoError("failed to delete the responsabilities", "04")
 	}
 
