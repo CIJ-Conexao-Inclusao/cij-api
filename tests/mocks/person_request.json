@@ -1,0 +1,21 @@
+{
+	"name": "Cauã",
+	"cpf": "12843343925",
+	"phone": "5547992564377",
+	"gender": "male",
+	"user": {
+		"email": "cauakathdev@gmail.com",
+		"password": "1234"
+	},
+	"address": {
+		"street": "Rua Manoel Francisco da Costa",
+		"number": "6765",
+		"neighborhood": "João Pessoa",
+		"city": "Jaraguá do Sul",
+		"state": "SC",
+		"zip_code": "89257407",
+		"country": "Brasil"
+	},
+	"disabilities": [
+	]
+}

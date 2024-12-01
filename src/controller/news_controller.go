@@ -42,12 +42,12 @@ func (n *NewsController) ListNews(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
 	}
 
-	response = model.Response{
+	responseData := model.ResponseData[[]model.NewsResponse]{
 		Message: "success",
 		Data:    news,
 	}
 
-	return ctx.Status(http.StatusOK).JSON(response)
+	return ctx.Status(http.StatusOK).JSON(responseData)
 }
 
 // CreateNews

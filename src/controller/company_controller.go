@@ -129,12 +129,12 @@ func (n *CompanyController) ListCompanies(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusInternalServerError).JSON(response)
 	}
 
-	response = model.Response{
+	responseData := model.ResponseData[[]model.CompanyResponse]{
 		Message: "success",
 		Data:    companies,
 	}
 
-	return ctx.Status(http.StatusOK).JSON(response)
+	return ctx.Status(http.StatusOK).JSON(responseData)
 }
 
 // GetCompany
