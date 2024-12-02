@@ -80,7 +80,7 @@ func (s *companyService) ListCompanies() ([]model.CompanyResponse, utils.Error) 
 			configService := NewConfigService(s.userRepo)
 			userConfig, err = configService.GetUserConfig(user.ConfigUrl)
 			if err.Code != "" {
-				return companiesResponse, err
+				fmt.Println("Error:", err)
 			}
 		}
 
