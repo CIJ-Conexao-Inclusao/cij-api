@@ -14,8 +14,6 @@ type VacancyRepo interface {
 
 	GetVacancyById(id int) (model.Vacancy, utils.Error)
 	ListVacancies(
-		page int,
-		perPage int,
 		companyId int,
 		area string,
 		contractType enum.VacancyContractType,
@@ -58,8 +56,6 @@ func (v *vacancyRepo) GetVacancyById(id int) (model.Vacancy, utils.Error) {
 }
 
 func (v *vacancyRepo) ListVacancies(
-	page int,
-	perPage int,
 	companyId int,
 	area string,
 	contractType enum.VacancyContractType,
@@ -87,7 +83,7 @@ func (v *vacancyRepo) ListVacancies(
 		query = query.Where("(vacancies.code LIKE ? OR vacancies.title LIKE ?)", "%"+searchText+"%", "%"+searchText+"%")
 	}
 
-	err := query.Limit(perPage).Offset(perPage * page).Find(&vacancies).Error
+	err := query.Find(&vacancies).Error
 	if err != nil {
 		return vacancies, vacancyRepoError("failed to list the vacancies", "02")
 	}

@@ -7,6 +7,7 @@ import (
 	"cij_api/src/repo"
 	repoVacancy "cij_api/src/repo/vacancy"
 	"cij_api/src/utils"
+	"slices"
 
 	"gorm.io/gorm"
 )
@@ -24,7 +25,7 @@ type vacancyService struct {
 
 type VacancyService interface {
 	CreateVacancy(vacancy modelVacancy.VacancyRequest) utils.Error
-	ListVacancies(page int, perPage int, companyId int, disabilityId int, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error)
+	ListVacancies(perPage int, companyId int, disabilityId int, candidateId int, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error)
 	GetVacancyById(id int) (modelVacancy.VacancyResponse, utils.Error)
 	UpdateVacancy(vacancy modelVacancy.VacancyRequest, id int) utils.Error
 	DeleteVacancy(id int) utils.Error
@@ -123,10 +124,10 @@ func (v *vacancyService) CreateVacancy(vacancy modelVacancy.VacancyRequest) util
 	return utils.Error{}
 }
 
-func (v *vacancyService) ListVacancies(page int, perPage int, companyId int, disabilityId int, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error) {
+func (v *vacancyService) ListVacancies(perPage int, companyId int, disabilityId int, candidateId int, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error) {
 	var vacanciesResponse []modelVacancy.VacancySimpleResponse
 
-	vacancies, err := v.vacancyRepo.ListVacancies(page, perPage, companyId, area, contractType, searchText)
+	vacancies, err := v.vacancyRepo.ListVacancies(companyId, area, contractType, searchText)
 	if err.Code != "" {
 		return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to list the vacancies", "02")
 	}
@@ -135,20 +136,43 @@ DisabilityLoop:
 	for _, vacancy := range vacancies {
 		var disabilities []model.DisabilityResponse
 
-		vacancyDisabilities, err := v.vacancyDisabilitiesRepo.GetVacancyDisabilities(vacancy.Id)
-		if err.Code != "" {
-			return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to get the disabilities", "03")
+		if disabilityId != 0 {
+			vacancyDisabilities, err := v.vacancyDisabilitiesRepo.GetVacancyDisabilities(vacancy.Id)
+			if err.Code != "" {
+				return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to get the disabilities", "03")
+			}
+
+			uniqueDisabilities := map[int]bool{}
+
+			for _, vacancyDisability := range vacancyDisabilities {
+				disabilities = append(disabilities, vacancyDisability.Disability.ToResponse())
+				uniqueDisabilities[vacancyDisability.Disability.Id] = true
+			}
+
+			if disabilityId != 0 && !uniqueDisabilities[disabilityId] {
+				continue DisabilityLoop
+			}
 		}
 
-		uniqueDisabilities := map[int]bool{}
+		if candidateId != 0 {
+			vacancyApplies, err := v.vacancyAppliesRepo.ListVacancyAppliesByVacancyId(vacancy.Id)
+			if err.Code != "" {
+				return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to get the vacancy applies", "04")
+			}
 
-		for _, vacancyDisability := range vacancyDisabilities {
-			disabilities = append(disabilities, vacancyDisability.Disability.ToResponse())
-			uniqueDisabilities[vacancyDisability.Disability.Id] = true
+			var candidateIds []int
+
+			for _, vacancyApply := range vacancyApplies {
+				candidateIds = append(candidateIds, vacancyApply.CandidateId)
+			}
+
+			if !slices.Contains(candidateIds, candidateId) {
+				continue DisabilityLoop
+			}
 		}
 
-		if disabilityId != 0 && !uniqueDisabilities[disabilityId] {
-			continue DisabilityLoop
+		if len(vacanciesResponse) >= perPage {
+			break
 		}
 
 		vacanciesResponse = append(vacanciesResponse, vacancy.ToSimpleResponse(disabilities))
