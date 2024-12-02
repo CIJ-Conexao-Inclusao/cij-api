@@ -136,22 +136,20 @@ DisabilityLoop:
 	for _, vacancy := range vacancies {
 		var disabilities []model.DisabilityResponse
 
-		if disabilityId != 0 {
-			vacancyDisabilities, err := v.vacancyDisabilitiesRepo.GetVacancyDisabilities(vacancy.Id)
-			if err.Code != "" {
-				return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to get the disabilities", "03")
-			}
+		vacancyDisabilities, err := v.vacancyDisabilitiesRepo.GetVacancyDisabilities(vacancy.Id)
+		if err.Code != "" {
+			return []modelVacancy.VacancySimpleResponse{}, vacancyServiceError("failed to get the disabilities", "03")
+		}
 
-			uniqueDisabilities := map[int]bool{}
+		uniqueDisabilities := map[int]bool{}
 
-			for _, vacancyDisability := range vacancyDisabilities {
-				disabilities = append(disabilities, vacancyDisability.Disability.ToResponse())
-				uniqueDisabilities[vacancyDisability.Disability.Id] = true
-			}
+		for _, vacancyDisability := range vacancyDisabilities {
+			disabilities = append(disabilities, vacancyDisability.Disability.ToResponse())
+			uniqueDisabilities[vacancyDisability.Disability.Id] = true
+		}
 
-			if disabilityId != 0 && !uniqueDisabilities[disabilityId] {
-				continue DisabilityLoop
-			}
+		if disabilityId != 0 && !uniqueDisabilities[disabilityId] {
+			continue DisabilityLoop
 		}
 
 		if candidateId != 0 {
