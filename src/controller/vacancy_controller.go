@@ -129,8 +129,9 @@ func (v *VacancyController) GetVacancyById(ctx *fiber.Ctx) error {
 	var response model.Response
 
 	id, _ := strconv.Atoi(ctx.Params("id"))
+	candidateId, _ := strconv.Atoi(ctx.Query("candidate_id"))
 
-	vacancy, err := v.vacancyService.GetVacancyById(id)
+	vacancy, err := v.vacancyService.GetVacancyById(id, candidateId)
 
 	if err.Message == "failed to get the vacancy" {
 		response = model.Response{

@@ -26,22 +26,23 @@ type Vacancy struct {
 }
 
 type VacancyResponse struct {
-	Id               int                             `json:"id"`
-	Code             string                          `json:"code"`
-	Title            string                          `json:"title"`
-	Description      string                          `json:"description"`
-	Department       string                          `json:"department"`
-	Section          string                          `json:"section"`
-	Turn             string                          `json:"turn"`
-	PublishDate      string                          `json:"publish_date"`
-	RegistrationDate string                          `json:"registration_date"`
-	Area             string                          `json:"area"`
-	ContractType     enum.VacancyContractType        `json:"contract_type"`
-	Company          string                          `json:"company"`
-	Disabilities     []model.DisabilityResponse      `json:"disabilities"`
-	Skills           []VacancySkillResponse          `json:"skills"`
-	Responsabilities []VacancyResponsabilityResponse `json:"responsabilities"`
-	Requirements     []VacancyRequirementResponse    `json:"requirements"`
+	Id                      int                             `json:"id"`
+	Code                    string                          `json:"code"`
+	Title                   string                          `json:"title"`
+	Description             string                          `json:"description"`
+	Department              string                          `json:"department"`
+	Section                 string                          `json:"section"`
+	Turn                    string                          `json:"turn"`
+	PublishDate             string                          `json:"publish_date"`
+	RegistrationDate        string                          `json:"registration_date"`
+	Area                    string                          `json:"area"`
+	CandidateAlreadyApplied bool                            `json:"candidate_already_applied,omitempty"`
+	ContractType            enum.VacancyContractType        `json:"contract_type"`
+	Company                 string                          `json:"company"`
+	Disabilities            []model.DisabilityResponse      `json:"disabilities"`
+	Skills                  []VacancySkillResponse          `json:"skills"`
+	Responsabilities        []VacancyResponsabilityResponse `json:"responsabilities"`
+	Requirements            []VacancyRequirementResponse    `json:"requirements"`
 }
 
 type VacancySimpleResponse struct {

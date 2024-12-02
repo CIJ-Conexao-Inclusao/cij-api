@@ -15,6 +15,7 @@ type VacancyApplyRepo interface {
 	CreateVacancyApply(createVacancyApply model.VacancyApply) (int, utils.Error)
 	GetVacancyApply(vacancyId int, candidateId int) (model.VacancyApply, utils.Error)
 	ListVacancyAppliesByVacancyId(vacancyId int) ([]model.VacancyApply, utils.Error)
+	ListVacancyAppliesByVacancyIdAndCandidateId(vacancyId int, candidateId int) ([]model.VacancyApply, utils.Error)
 	UpdateVacancyApplyStatus(vacancyApplyId int, status enum.VacancyApplyStatus) utils.Error
 	DeleteVacancyAppliesByVacancyId(vacancyId int, tx *gorm.DB) utils.Error
 }
@@ -62,6 +63,16 @@ func (v *vacancyApplyRepo) ListVacancyAppliesByVacancyId(vacancyId int) ([]model
 	var vacancyApplies []model.VacancyApply
 
 	if err := v.db.Where("vacancy_id = ?", vacancyId).Preload("Vacancy").Preload("Candidate").Find(&vacancyApplies).Error; err != nil {
+		return []model.VacancyApply{}, vacancyApplyRepoError("failed to list the vacancy applies", "02")
+	}
+
+	return vacancyApplies, utils.Error{}
+}
+
+func (v *vacancyApplyRepo) ListVacancyAppliesByVacancyIdAndCandidateId(vacancyId int, candidateId int) ([]model.VacancyApply, utils.Error) {
+	var vacancyApplies []model.VacancyApply
+
+	if err := v.db.Where("vacancy_id = ? AND candidate_id = ?", vacancyId, candidateId).Preload("Vacancy").Preload("Candidate").Find(&vacancyApplies).Error; err != nil {
 		return []model.VacancyApply{}, vacancyApplyRepoError("failed to list the vacancy applies", "02")
 	}
 

@@ -26,7 +26,7 @@ type vacancyService struct {
 type VacancyService interface {
 	CreateVacancy(vacancy modelVacancy.VacancyRequest) utils.Error
 	ListVacancies(perPage int, companyId int, disabilityId int, candidateId int, area string, contractType enum.VacancyContractType, searchText string) ([]modelVacancy.VacancySimpleResponse, utils.Error)
-	GetVacancyById(id int) (modelVacancy.VacancyResponse, utils.Error)
+	GetVacancyById(id int, candidateId int) (modelVacancy.VacancyResponse, utils.Error)
 	UpdateVacancy(vacancy modelVacancy.VacancyRequest, id int) utils.Error
 	DeleteVacancy(id int) utils.Error
 
@@ -179,7 +179,7 @@ DisabilityLoop:
 	return vacanciesResponse, utils.Error{}
 }
 
-func (v *vacancyService) GetVacancyById(id int) (modelVacancy.VacancyResponse, utils.Error) {
+func (v *vacancyService) GetVacancyById(id int, candidateId int) (modelVacancy.VacancyResponse, utils.Error) {
 	vacancy, err := v.vacancyRepo.GetVacancyById(id)
 	if err.Code != "" {
 		return modelVacancy.VacancyResponse{}, vacancyServiceError("failed to get the vacancy", "03")
@@ -210,12 +210,23 @@ func (v *vacancyService) GetVacancyById(id int) (modelVacancy.VacancyResponse, u
 		disabilities = append(disabilities, vacancyDisability.Disability.ToResponse())
 	}
 
-	return vacancy.ToResponse(
+	vacancyResponse := vacancy.ToResponse(
 		disabilities,
 		skills,
 		responsabilities,
 		requirements,
-	), utils.Error{}
+	)
+
+	if candidateId != 0 {
+		vacancyApplies, err := v.vacancyAppliesRepo.ListVacancyAppliesByVacancyIdAndCandidateId(id, candidateId)
+		if err.Code != "" {
+			return modelVacancy.VacancyResponse{}, vacancyServiceError("failed to get the vacancy apply", "08")
+		}
+
+		vacancyResponse.CandidateAlreadyApplied = len(vacancyApplies) > 0
+	}
+
+	return vacancyResponse, utils.Error{}
 }
 
 func (v *vacancyService) UpdateVacancy(vacancy modelVacancy.VacancyRequest, id int) utils.Error {
